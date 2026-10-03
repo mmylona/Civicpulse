@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp -q package -DskipTests \
  && java -Djarmode=tools -jar target/civicpulse.jar extract --layers --launcher --destination target/extracted
 
 # --- Runtime ----------------------------------------------------------------
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 RUN addgroup -S civicpulse && adduser -S -G civicpulse -u 10001 civicpulse
 WORKDIR /app
 
