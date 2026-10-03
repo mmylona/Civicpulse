@@ -1,5 +1,6 @@
 package io.civicpulse.support;
 
+import java.time.Duration;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,9 @@ public class TestcontainersConfiguration {
     @Bean
     @ServiceConnection
     PostgreSQLContainer<?> postgisContainer() {
-        return new PostgreSQLContainer<>(DockerImageName.parse(POSTGIS_IMAGE).asCompatibleSubstituteFor("postgres"));
+        // The PostGIS image is amd64-only; under emulation on Apple Silicon its first start
+        // (initdb + extension set-up) can take well over the default 60 seconds.
+        return new PostgreSQLContainer<>(DockerImageName.parse(POSTGIS_IMAGE).asCompatibleSubstituteFor("postgres"))
+                .withStartupTimeout(Duration.ofMinutes(3));
     }
 }

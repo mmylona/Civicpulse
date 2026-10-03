@@ -27,3 +27,4 @@ uploads/
 !.vscode/extensions.json
 .DS_Store
 Thumbs.db
+build/

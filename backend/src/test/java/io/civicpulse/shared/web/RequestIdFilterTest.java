@@ -37,7 +37,7 @@ class RequestIdFilterTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "has space", "<script>", "line\nbreak", "x".repeat(65)})
+    @ValueSource(strings = {"", "has space", "<script>", "line\nbreak", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"})
     void replacesMalformedInboundIds(String malformed) throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(RequestIdFilter.HEADER, malformed);
