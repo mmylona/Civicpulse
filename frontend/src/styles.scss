@@ -1,0 +1,156 @@
+/*
+ * CivicPulse design tokens.
+ *
+ * The palette comes from the street: asphalt for ink, kerb grey for lines, civic teal for
+ * anything interactive, and road-marking yellow used sparingly for the one element that
+ * must stand out. Colour always carries meaning; it is never the only signal.
+ */
+@use '@fontsource-variable/atkinson-hyperlegible-next/index.css';
+
+:root {
+  color-scheme: light;
+
+  --cp-paper: #f6f7f5;
+  --cp-surface: #ffffff;
+  --cp-ink: #1d2a30;
+  --cp-ink-muted: #566469;
+  --cp-kerb: #d3dad8;
+  --cp-asphalt: #1d2a30;
+  --cp-on-asphalt: #f2f5f4;
+  --cp-on-asphalt-muted: #b7c3c3;
+  --cp-teal: #0e6b71;
+  --cp-teal-strong: #0a5459;
+  --cp-marking: #f4c430;
+  --cp-on-marking: #1d2a30;
+  --cp-danger: #a3271f;
+  --cp-ok: #23714a;
+  --cp-focus: #0e6b71;
+
+  /* Type: one family; major-third scale from a 1rem body. */
+  --cp-font: 'Atkinson Hyperlegible Next Variable', 'Segoe UI', system-ui, sans-serif;
+  --cp-step--1: 0.875rem;
+  --cp-step-0: 1rem;
+  --cp-step-1: 1.25rem;
+  --cp-step-2: 1.5625rem;
+  --cp-step-3: 1.953rem;
+  --cp-step-4: 2.441rem;
+
+  /* Spacing on an 8px rhythm. */
+  --cp-space-1: 0.25rem;
+  --cp-space-2: 0.5rem;
+  --cp-space-3: 1rem;
+  --cp-space-4: 1.5rem;
+  --cp-space-5: 2rem;
+  --cp-space-6: 3rem;
+
+  --cp-radius-control: 6px;
+  --cp-content-width: 72rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --cp-paper: #121a1e;
+    --cp-surface: #18232a;
+    --cp-ink: #e8eceb;
+    --cp-ink-muted: #a7b4b6;
+    --cp-kerb: #2f3d44;
+    --cp-asphalt: #0c1316;
+    --cp-teal: #5cc0c6;
+    --cp-teal-strong: #8ad6da;
+    --cp-danger: #f08a80;
+    --cp-ok: #6fcf9a;
+    --cp-focus: #8ad6da;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--cp-font);
+  font-size: 100%;
+  line-height: 1.5;
+  color: var(--cp-ink);
+  background: var(--cp-paper);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--cp-space-3);
+}
+
+h1 {
+  font-size: var(--cp-step-4);
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: var(--cp-step-3);
+}
+
+h3 {
+  font-size: var(--cp-step-2);
+}
+
+p {
+  margin: 0 0 var(--cp-space-3);
+  max-width: 68ch;
+}
+
+a {
+  color: var(--cp-teal);
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  color: var(--cp-teal-strong);
+}
+
+button {
+  font: inherit;
+}
+
+/* Keyboard focus is always visible, never removed. */
+:focus-visible {
+  outline: 3px solid var(--cp-focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.cp-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

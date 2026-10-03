@@ -1,0 +1,32 @@
+{
+  "app": {
+    "name": "CivicPulse",
+    "tagline": "Report and track problems in your city",
+    "skipToContent": "Skip to main content",
+    "primaryNavigation": "Main"
+  },
+  "nav": {
+    "map": "Map"
+  },
+  "status": {
+    "checking": "Connecting to the city service…",
+    "online": "City service connected, version {{version}}",
+    "offline": "The city service can't be reached right now. Information on this page may be out of date.",
+    "retry": "Try again"
+  },
+  "pages": {
+    "map": {
+      "title": "City map",
+      "heading": "City map",
+      "intro": "Reported problems in your city will appear on this map, grouped by area as you zoom in.",
+      "regionLabel": "Map of reported problems",
+      "empty": "No problems to show yet."
+    },
+    "notFound": {
+      "title": "Page not found",
+      "heading": "This page doesn't exist",
+      "body": "The link may be mistyped, or the page may have moved.",
+      "action": "Go to the city map"
+    }
+  }
+}

@@ -1,0 +1,130 @@
+:host {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+}
+
+.skip-link {
+  position: absolute;
+  inset-block-start: var(--cp-space-2);
+  inset-inline-start: var(--cp-space-2);
+  z-index: 10;
+  padding: var(--cp-space-2) var(--cp-space-3);
+  background: var(--cp-marking);
+  color: var(--cp-on-marking);
+  font-weight: 700;
+  border-radius: var(--cp-radius-control);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+  outline-color: var(--cp-on-asphalt);
+}
+
+.masthead {
+  background: var(--cp-asphalt);
+  color: var(--cp-on-asphalt);
+}
+
+.masthead__inner,
+.site-footer__inner {
+  max-width: var(--cp-content-width);
+  margin-inline: auto;
+  padding-inline: var(--cp-space-3);
+}
+
+.masthead__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cp-space-4);
+  min-block-size: 4rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cp-space-2);
+  color: var(--cp-marking);
+  text-decoration: none;
+}
+
+.brand__mark {
+  inline-size: 1.5rem;
+  block-size: 2rem;
+}
+
+.brand__name {
+  color: var(--cp-on-asphalt);
+  font-size: var(--cp-step-1);
+  font-weight: 780;
+  letter-spacing: -0.01em;
+}
+
+.brand:focus-visible,
+.nav a:focus-visible {
+  outline-color: var(--cp-marking);
+}
+
+.nav ul {
+  display: flex;
+  gap: var(--cp-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav a {
+  display: inline-block;
+  padding-block: var(--cp-space-2);
+  color: var(--cp-on-asphalt-muted);
+  font-weight: 600;
+  text-decoration: none;
+  border-block-end: 3px solid transparent;
+}
+
+.nav a:hover {
+  color: var(--cp-on-asphalt);
+}
+
+.nav a.is-active {
+  color: var(--cp-on-asphalt);
+  border-block-end-color: var(--cp-marking);
+}
+
+/* The centre line of a road: the one place the marking yellow is used as decoration. */
+.lane-line {
+  block-size: 4px;
+  background: repeating-linear-gradient(90deg, var(--cp-marking) 0 2.5rem, transparent 2.5rem 4rem);
+}
+
+.page {
+  width: 100%;
+  max-width: var(--cp-content-width);
+  margin-inline: auto;
+  padding: var(--cp-space-5) var(--cp-space-3) var(--cp-space-6);
+}
+
+.page:focus {
+  outline: none;
+}
+
+.site-footer {
+  border-block-start: 1px solid var(--cp-kerb);
+  background: var(--cp-surface);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--cp-space-2) var(--cp-space-4);
+  padding-block: var(--cp-space-4);
+}
+
+.tagline {
+  margin: 0;
+  color: var(--cp-ink-muted);
+  font-size: var(--cp-step--1);
+}
