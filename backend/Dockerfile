@@ -3,7 +3,7 @@
 # --- Build ------------------------------------------------------------------
 # Tests are not run here: CI runs unit and integration tests in their own jobs, and the
 # integration tests need Docker themselves (Testcontainers).
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3-eclipse-temurin-24 AS build
 WORKDIR /workspace
 
 COPY pom.xml .
