@@ -38,12 +38,12 @@ class ApplicationSmokeIT {
 
     @Test
     @SuppressWarnings("rawtypes")
-    void unknownApiPathUsesTheErrorModel() {
+    void anonymousApiCallReturns401() {
         ResponseEntity<Map> response = http.getForEntity("/api/v1/nothing-here", Map.class);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody())
-                .containsEntry("code", "RESOURCE_NOT_FOUND")
+                .containsEntry("code", "AUTHENTICATION_REQUIRED")
                 .containsEntry("traceId", response.getHeaders().getFirst(RequestIdFilter.HEADER))
                 .doesNotContainKeys("trace", "exception");
     }

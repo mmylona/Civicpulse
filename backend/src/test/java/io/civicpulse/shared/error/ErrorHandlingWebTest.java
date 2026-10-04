@@ -3,6 +3,7 @@ package io.civicpulse.shared.error;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.civicpulse.shared.security.SecurityConfig;
 import io.civicpulse.shared.web.RequestIdFilter;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -25,8 +27,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,8 +40,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@WebMvcTest
-@Import({ApiErrorResponses.class, ErrorHandlingWebTest.FailingController.class})
+@WebMvcTest(controllers = ErrorHandlingWebTest.FailingController.class)
+@Import({ApiErrorResponses.class, SecurityConfig.class, ErrorHandlingWebTest.FailingController.class})
 class ErrorHandlingWebTest {
 
     private static final String NOW = "2026-10-03T14:32:07Z";
@@ -46,7 +51,7 @@ class ErrorHandlingWebTest {
 
     @Test
     void unknownPathReturnsNotFoundInTheErrorModel() throws Exception {
-        mvc.perform(get("/api/v1/does-not-exist").header(RequestIdFilter.HEADER, "trace-123"))
+        mvc.perform(get("/api/v1/does-not-exist").with(jwt()).header(RequestIdFilter.HEADER, "trace-123"))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(header().string(RequestIdFilter.HEADER, "trace-123"))
@@ -57,6 +62,30 @@ class ErrorHandlingWebTest {
                 .andExpect(jsonPath("$.path").value("/api/v1/does-not-exist"))
                 .andExpect(jsonPath("$.traceId").value("trace-123"))
                 .andExpect(jsonPath("$.errors", hasSize(0)));
+    }
+
+    @Test
+    void anonymousApiRequestGets401() throws Exception {
+        mvc.perform(get("/api/v1/does-not-exist"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"))
+                .andExpect(jsonPath("$.path").value("/api/v1/does-not-exist"))
+                .andExpect(jsonPath("$.timestamp").value(NOW));
+    }
+
+    @Test
+    void preAuthorizeReturns401Or403() throws Exception {
+        mvc.perform(get("/test/admin-only"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"))
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
+        mvc.perform(get("/test/admin-only").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_CITIZEN"))))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
+        mvc.perform(get("/test/admin-only").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -166,7 +195,13 @@ class ErrorHandlingWebTest {
 
     @RestController
     @RequestMapping("/test")
-    static class FailingController {
+    public static class FailingController {
+
+        @GetMapping("/admin-only")
+        @PreAuthorize("hasRole('ADMIN')")
+        public String adminOnly() {
+            return "ok";
+        }
 
         @PostMapping("/forms")
         String create(@Valid @RequestBody Form form) {

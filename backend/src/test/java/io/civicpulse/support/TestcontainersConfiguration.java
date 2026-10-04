@@ -13,11 +13,14 @@ public class TestcontainersConfiguration {
     static final String POSTGIS_IMAGE =
             System.getProperty("civicpulse.test.postgis-image", "postgis/postgis:17-3.5");
 
+    // one container for all test contexts
+    private static final PostgreSQLContainer<?> POSTGIS =
+            new PostgreSQLContainer<>(DockerImageName.parse(POSTGIS_IMAGE).asCompatibleSubstituteFor("postgres"))
+                    .withStartupTimeout(Duration.ofMinutes(3));
+
     @Bean
     @ServiceConnection
     PostgreSQLContainer<?> postgisContainer() {
-        // amd64-only image: under emulation (Apple Silicon) the first start can exceed 60 s
-        return new PostgreSQLContainer<>(DockerImageName.parse(POSTGIS_IMAGE).asCompatibleSubstituteFor("postgres"))
-                .withStartupTimeout(Duration.ofMinutes(3));
+        return POSTGIS;
     }
 }

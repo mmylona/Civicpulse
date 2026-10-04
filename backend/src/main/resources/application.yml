@@ -57,6 +57,16 @@ management:
 civicpulse:
   cors:
     allowed-origins: ${CIVICPULSE_CORS_ALLOWED_ORIGINS:http://localhost:4200}
+  security:
+    jwt:
+      # required, at least 32 bytes
+      secret: ${CIVICPULSE_JWT_SECRET:}
+      access-token-ttl: 15m
+      issuer: civicpulse
+    refresh-token:
+      ttl: 14d
+      reuse-grace: 10s
+      cookie-secure: ${CIVICPULSE_COOKIE_SECURE:true}
 
 logging:
   pattern:
