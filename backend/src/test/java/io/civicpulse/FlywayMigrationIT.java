@@ -3,19 +3,16 @@ package io.civicpulse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
-import io.civicpulse.support.TestcontainersConfiguration;
+import io.civicpulse.support.IntegrationTest;
 import java.util.List;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationState;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-@SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@IntegrationTest
 class FlywayMigrationIT {
 
     @Autowired
@@ -39,6 +36,14 @@ class FlywayMigrationIT {
         List<String> extensions = jdbc.queryForList("SELECT extname FROM pg_extension", String.class);
 
         assertThat(extensions).contains("postgis", "pg_trgm", "citext");
+    }
+
+    @Test
+    void identityAndAuditTablesExist() {
+        List<String> tables = jdbc.queryForList(
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'", String.class);
+
+        assertThat(tables).contains("users", "user_roles", "teams", "refresh_tokens", "audit_entries");
     }
 
     @Test
