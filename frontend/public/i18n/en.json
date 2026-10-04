@@ -7,6 +7,7 @@
   },
   "nav": {
     "map": "Map",
+    "admin": "Admin",
     "signIn": "Sign in",
     "signOut": "Sign out"
   },
@@ -59,6 +60,49 @@
       "title": "No access",
       "heading": "You don't have access to this page",
       "body": "Your account doesn't have the role this page needs. Ask an administrator if you think it should."
+    },
+    "adminUsers": {
+      "title": "Users",
+      "heading": "Users",
+      "searchLabel": "Name or email",
+      "roleLabel": "Role",
+      "allRoles": "All roles",
+      "search": "Search",
+      "loading": "Loading users...",
+      "loadFailed": "Users could not be loaded.",
+      "count": "{{count}} users",
+      "empty": "No users match this search.",
+      "tableLabel": "Users",
+      "columns": {
+        "name": "Name",
+        "roles": "Roles",
+        "team": "Team",
+        "status": "Status",
+        "lastSignIn": "Last sign-in",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "locked": "Locked",
+        "disabled": "Disabled"
+      },
+      "never": "Never",
+      "edit": "Edit",
+      "editHeading": "Edit {{name}}",
+      "selfHint": "You can't remove your own admin role.",
+      "noTeam": "No team",
+      "enabled": "Account enabled",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "saved": "Saved changes to {{name}}",
+      "pagination": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {{page}} of {{total}}",
+      "errors": {
+        "noRole": "Choose at least one role"
+      }
     }
   },
   "roles": {
@@ -83,6 +127,10 @@
     "RATE_LIMITED": "Too many attempts from this device. Wait a minute and try again.",
     "EMAIL_ALREADY_REGISTERED": "An account with this email already exists. Sign in instead.",
     "VALIDATION_FAILED": "Some values are not valid. Check the form and try again.",
+    "CANNOT_REMOVE_OWN_ADMIN_ROLE": "You can't remove the admin role from your own account.",
+    "CANNOT_DISABLE_OWN_ACCOUNT": "You can't disable your own account.",
+    "UNKNOWN_TEAM": "That team no longer exists. Reload the page and pick another.",
+    "USER_NOT_FOUND": "That user no longer exists.",
     "ACCESS_DENIED": "You don't have permission to do this.",
     "AUTHENTICATION_REQUIRED": "Your session has ended. Sign in again.",
     "TOKEN_INVALID": "Your session has ended. Sign in again.",

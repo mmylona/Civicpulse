@@ -1,0 +1,162 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--cp-space-3);
+  margin-block-end: var(--cp-space-4);
+}
+
+.filters .field {
+  flex: 1 1 14rem;
+  margin: 0;
+}
+
+.state-message {
+  color: var(--cp-ink-muted);
+}
+
+.state-message--error {
+  color: var(--cp-danger);
+}
+
+.result-count {
+  color: var(--cp-ink-muted);
+  font-size: var(--cp-step--1);
+}
+
+.table-scroll {
+  position: relative;
+  overflow-x: auto;
+  border: 1px solid var(--cp-kerb);
+  border-radius: var(--cp-radius-control);
+  background: var(--cp-surface);
+}
+
+.users {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+  font-size: var(--cp-step--1);
+}
+
+.users th,
+.users td {
+  padding: var(--cp-space-2) var(--cp-space-3);
+  text-align: start;
+  vertical-align: top;
+  border-block-end: 1px solid var(--cp-kerb);
+}
+
+.users thead th {
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--cp-ink-muted);
+}
+
+.users tbody tr:last-child > * {
+  border-block-end: 0;
+}
+
+.users tbody th {
+  font-weight: 400;
+}
+
+.users tr.is-selected {
+  box-shadow: inset 4px 0 0 var(--cp-marking);
+}
+
+.user-name {
+  display: block;
+  font-weight: 650;
+  color: var(--cp-ink);
+}
+
+.user-email {
+  display: block;
+  color: var(--cp-ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.users .user-email {
+  overflow-wrap: normal;
+}
+
+.status::before {
+  content: '';
+  display: inline-block;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  margin-inline-end: var(--cp-space-1);
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status--on {
+  color: var(--cp-ok);
+}
+
+.status--warn {
+  color: var(--cp-ink);
+}
+
+.status--warn::before {
+  background: var(--cp-marking);
+}
+
+.status--off {
+  color: var(--cp-danger);
+}
+
+.button--small {
+  min-block-size: 2.25rem;
+  padding: var(--cp-space-1) var(--cp-space-3);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--cp-space-3);
+  margin-block-start: var(--cp-space-3);
+}
+
+.edit-panel {
+  margin-block-start: var(--cp-space-5);
+  padding: var(--cp-space-4);
+  border: 1px solid var(--cp-kerb);
+  border-block-start: 4px solid var(--cp-teal);
+  border-radius: var(--cp-radius-control);
+  background: var(--cp-surface);
+  max-width: 34rem;
+}
+
+.edit-panel h2 {
+  margin-block-end: var(--cp-space-1);
+}
+
+.edit-panel h2:focus {
+  outline: none;
+}
+
+fieldset.field {
+  border: 0;
+  padding: 0;
+  margin-inline: 0;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--cp-space-2);
+  min-block-size: 2.25rem;
+}
+
+.check input {
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  accent-color: var(--cp-teal);
+}
+
+.edit-actions {
+  display: flex;
+  gap: var(--cp-space-3);
+}

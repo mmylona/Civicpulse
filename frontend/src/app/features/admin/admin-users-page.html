@@ -1,0 +1,209 @@
+<section *transloco="let t">
+  <h1>{{ t('pages.adminUsers.heading') }}</h1>
+
+  <form class="filters" role="search" [formGroup]="filters" (ngSubmit)="applyFilters()">
+    <div class="field">
+      <label class="field__label" for="user-query">{{ t('pages.adminUsers.searchLabel') }}</label>
+      <input
+        class="input"
+        id="user-query"
+        type="search"
+        formControlName="query"
+        spellcheck="false"
+      />
+    </div>
+    <div class="field">
+      <label class="field__label" for="user-role">{{ t('pages.adminUsers.roleLabel') }}</label>
+      <select class="input" id="user-role" formControlName="role">
+        <option value="">{{ t('pages.adminUsers.allRoles') }}</option>
+        @for (role of roles; track role) {
+          <option [value]="role">{{ t('roles.' + role) }}</option>
+        }
+      </select>
+    </div>
+    <button class="button button--quiet" type="submit">{{ t('pages.adminUsers.search') }}</button>
+  </form>
+
+  <p class="cp-visually-hidden" aria-live="polite">
+    @if (announcement()) {
+      {{ t('pages.adminUsers.saved', { name: announcement() }) }}
+    }
+  </p>
+
+  @switch (state().status) {
+    @case ('loading') {
+      <p class="state-message" role="status">{{ t('pages.adminUsers.loading') }}</p>
+    }
+    @case ('failed') {
+      <div class="state-message state-message--error" role="alert">
+        <p>{{ t('pages.adminUsers.loadFailed') }}</p>
+        <button class="button button--quiet" type="button" (click)="load()">
+          {{ t('status.retry') }}
+        </button>
+      </div>
+    }
+    @case ('loaded') {
+      @if (page(); as result) {
+        <p class="result-count" role="status">
+          {{ t('pages.adminUsers.count', { count: result.page.totalElements }) }}
+        </p>
+
+        @if (result.content.length === 0) {
+          <p class="state-message">{{ t('pages.adminUsers.empty') }}</p>
+        } @else {
+          <div
+            class="table-scroll"
+            tabindex="0"
+            [attr.aria-label]="t('pages.adminUsers.tableLabel')"
+          >
+            <table class="users">
+              <thead>
+                <tr>
+                  <th scope="col">{{ t('pages.adminUsers.columns.name') }}</th>
+                  <th scope="col">{{ t('pages.adminUsers.columns.roles') }}</th>
+                  <th scope="col">{{ t('pages.adminUsers.columns.team') }}</th>
+                  <th scope="col">{{ t('pages.adminUsers.columns.status') }}</th>
+                  <th scope="col">{{ t('pages.adminUsers.columns.lastSignIn') }}</th>
+                  <th scope="col">
+                    <span class="cp-visually-hidden">{{
+                      t('pages.adminUsers.columns.actions')
+                    }}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of result.content; track user.id) {
+                  <tr [class.is-selected]="editing()?.id === user.id">
+                    <th scope="row">
+                      <span class="user-name">{{ user.displayName }}</span>
+                      <span class="user-email">{{ user.email }}</span>
+                    </th>
+                    <td>
+                      @for (role of user.roles; track role; let lastRole = $last) {
+                        {{ t('roles.' + role) }}{{ lastRole ? '' : ', ' }}
+                      }
+                    </td>
+                    <td>{{ user.team?.name ?? '-' }}</td>
+                    <td>
+                      @if (!user.enabled) {
+                        <span class="status status--off">{{
+                          t('pages.adminUsers.status.disabled')
+                        }}</span>
+                      } @else if (user.locked) {
+                        <span class="status status--warn">{{
+                          t('pages.adminUsers.status.locked')
+                        }}</span>
+                      } @else {
+                        <span class="status status--on">{{
+                          t('pages.adminUsers.status.active')
+                        }}</span>
+                      }
+                    </td>
+                    <td>
+                      @if (user.lastLoginAt) {
+                        <time [attr.datetime]="user.lastLoginAt">{{
+                          user.lastLoginAt | date: 'd MMM y, HH:mm'
+                        }}</time>
+                      } @else {
+                        {{ t('pages.adminUsers.never') }}
+                      }
+                    </td>
+                    <td>
+                      <button
+                        class="button button--quiet button--small"
+                        type="button"
+                        (click)="edit(user)"
+                      >
+                        {{ t('pages.adminUsers.edit')
+                        }}<span class="cp-visually-hidden"> {{ user.displayName }}</span>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (result.page.totalPages > 1) {
+            <nav class="pagination" [attr.aria-label]="t('pages.adminUsers.pagination')">
+              <button
+                class="button button--quiet"
+                type="button"
+                [disabled]="result.page.number === 0"
+                (click)="goToPage(result.page.number - 1)"
+              >
+                {{ t('pages.adminUsers.previous') }}
+              </button>
+              <span>{{
+                t('pages.adminUsers.pageOf', {
+                  page: result.page.number + 1,
+                  total: result.page.totalPages,
+                })
+              }}</span>
+              <button
+                class="button button--quiet"
+                type="button"
+                [disabled]="result.page.number + 1 >= result.page.totalPages"
+                (click)="goToPage(result.page.number + 1)"
+              >
+                {{ t('pages.adminUsers.next') }}
+              </button>
+            </nav>
+          }
+        }
+      }
+    }
+  }
+
+  @if (editing(); as user) {
+    <section class="edit-panel" aria-labelledby="edit-heading">
+      <h2 id="edit-heading" tabindex="-1" #editHeading>
+        {{ t('pages.adminUsers.editHeading', { name: user.displayName }) }}
+      </h2>
+      <p class="user-email">{{ user.email }}</p>
+
+      <cp-error-summary [items]="saveErrors()" />
+
+      <form [formGroup]="editForm" (ngSubmit)="save()">
+        <fieldset class="field" formGroupName="roles">
+          <legend class="field__label">{{ t('pages.adminUsers.columns.roles') }}</legend>
+          @if (isSelf(user)) {
+            <span class="field__hint">{{ t('pages.adminUsers.selfHint') }}</span>
+          }
+          @for (role of roles; track role) {
+            <label class="check">
+              <input type="checkbox" [id]="'role-' + role" [formControlName]="role" />
+              {{ t('roles.' + role) }}
+            </label>
+          }
+        </fieldset>
+
+        <div class="field">
+          <label class="field__label" for="edit-team">{{
+            t('pages.adminUsers.columns.team')
+          }}</label>
+          <select class="input" id="edit-team" formControlName="teamId">
+            <option value="">{{ t('pages.adminUsers.noTeam') }}</option>
+            @for (team of teams(); track team.id) {
+              <option [value]="team.id">{{ team.name }}</option>
+            }
+          </select>
+        </div>
+
+        <label class="check field">
+          <input type="checkbox" formControlName="enabled" />
+          {{ t('pages.adminUsers.enabled') }}
+        </label>
+
+        <div class="edit-actions">
+          <button class="button button--primary" type="submit" [disabled]="saving()">
+            {{ saving() ? t('pages.adminUsers.saving') : t('pages.adminUsers.save') }}
+          </button>
+          <button class="button button--quiet" type="button" (click)="cancelEdit()">
+            {{ t('pages.adminUsers.cancel') }}
+          </button>
+        </div>
+      </form>
+    </section>
+  }
+</section>

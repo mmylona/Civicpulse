@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { signedOutGuard } from './core/auth/auth.guards';
+import { roleGuard, signedInGuard, signedOutGuard } from './core/auth/auth.guards';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'map' },
@@ -19,6 +19,19 @@ export const routes: Routes = [
     title: 'pages.register.title',
     canActivate: [signedOutGuard],
     loadComponent: () => import('./features/auth/register-page').then((m) => m.RegisterPage),
+  },
+  {
+    path: 'admin',
+    canActivate: [signedInGuard, roleGuard('ADMIN')],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'users' },
+      {
+        path: 'users',
+        title: 'pages.adminUsers.title',
+        loadComponent: () =>
+          import('./features/admin/admin-users-page').then((m) => m.AdminUsersPage),
+      },
+    ],
   },
   {
     path: 'forbidden',

@@ -28,6 +28,13 @@
               t('nav.map')
             }}</a>
           </li>
+          @if (isAdmin()) {
+            <li>
+              <a routerLink="/admin" routerLinkActive="is-active" ariaCurrentWhenActive="page">{{
+                t('nav.admin')
+              }}</a>
+            </li>
+          }
         </ul>
       </nav>
 
