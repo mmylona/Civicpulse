@@ -3,6 +3,7 @@ package io.civicpulse.identity;
 import static io.civicpulse.support.AuthTestClient.json;
 import static io.civicpulse.support.AuthTestClient.uniqueEmail;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -13,7 +14,6 @@ import io.civicpulse.support.AuthTestClient;
 import io.civicpulse.support.AuthTestClient.Session;
 import io.civicpulse.support.IntegrationTest;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -90,13 +90,13 @@ class AdminUsersIT {
                         {"roles": ["MODERATOR", "CITIZEN"]}
                         """).header(HttpHeaders.AUTHORIZATION, admin.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.roles").value(List.of("CITIZEN", "MODERATOR")));
+                .andExpect(jsonPath("$.roles", contains("CITIZEN", "MODERATOR")));
 
         mvc.perform(post("/api/v1/auth/refresh").cookie(citizen.refreshCookie()))
                 .andExpect(status().isUnauthorized());
 
         mvc.perform(get("/api/v1/me").header(HttpHeaders.AUTHORIZATION, auth.login(citizenEmail).bearer()))
-                .andExpect(jsonPath("$.roles").value(List.of("CITIZEN", "MODERATOR")));
+                .andExpect(jsonPath("$.roles", contains("CITIZEN", "MODERATOR")));
 
         AuditRow row = jdbc.sql("""
                         SELECT actor_id, details->>'newRoles' AS new_roles FROM audit_entries

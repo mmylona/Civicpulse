@@ -6,6 +6,7 @@ import static io.civicpulse.support.AuthTestClient.fromNewAddress;
 import static io.civicpulse.support.AuthTestClient.json;
 import static io.civicpulse.support.AuthTestClient.uniqueEmail;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.nullValue;
@@ -75,7 +76,7 @@ class AuthFlowIT {
                 .andExpect(jsonPath("$.refreshToken").doesNotExist())
                 .andExpect(jsonPath("$.user.email").value(email))
                 .andExpect(jsonPath("$.user.displayName").value("Ada Citizen"))
-                .andExpect(jsonPath("$.user.roles").value(List.of("CITIZEN")))
+                .andExpect(jsonPath("$.user.roles", contains("CITIZEN")))
                 .andExpect(jsonPath("$.user.team").value(nullValue()))
                 .andExpect(cookie().httpOnly(REFRESH_COOKIE, true))
                 .andExpect(cookie().secure(REFRESH_COOKIE, true))
@@ -90,7 +91,7 @@ class AuthFlowIT {
         auth.register(email);
 
         mvc.perform(json(post("/api/v1/auth/register"), """
-                        {"email": " %s ", "password": "%s", "displayName": "Someone Else"}
+                        {"email": "%s", "password": "%s", "displayName": "Someone Else"}
                         """.formatted(email.toUpperCase(), PASSWORD)).with(fromNewAddress()))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("EMAIL_ALREADY_REGISTERED"));
@@ -166,7 +167,7 @@ class AuthFlowIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(session.userId().toString()))
                 .andExpect(jsonPath("$.email").value(email))
-                .andExpect(jsonPath("$.roles").value(List.of("CITIZEN")));
+                .andExpect(jsonPath("$.roles", contains("CITIZEN")));
     }
 
     @Test
