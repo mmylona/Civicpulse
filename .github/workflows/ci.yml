@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Java 21)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build and unit tests
+        run: mvn -B -ntp test
+
+      - name: Integration tests
+        run: mvn -B -ntp verify -DskipUnitTests
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-test-reports
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+          retention-days: 7
+
+  frontend:
+    name: Frontend (Angular)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+  docker:
+    name: Docker images
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate compose file
+        run: docker compose config --quiet
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build backend image
+        uses: docker/build-push-action@v7
+        with:
+          context: backend
+          push: false
+          tags: civicpulse-backend:ci
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v7
+        with:
+          context: frontend
+          push: false
+          tags: civicpulse-frontend:ci
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,scope=frontend,mode=max
