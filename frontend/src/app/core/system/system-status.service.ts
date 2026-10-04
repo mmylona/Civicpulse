@@ -14,7 +14,6 @@ export type ApiStatus =
   | { readonly state: 'online'; readonly version: string }
   | { readonly state: 'offline' };
 
-/** Tracks whether the backend is reachable, so the UI can say so instead of failing silently. */
 @Injectable({ providedIn: 'root' })
 export class SystemStatusService {
   private readonly http = inject(HttpClient);

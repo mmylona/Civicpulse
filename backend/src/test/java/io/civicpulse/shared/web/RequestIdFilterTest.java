@@ -4,9 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.MDC;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -37,7 +38,7 @@ class RequestIdFilterTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "has space", "<script>", "line\nbreak", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"})
+    @MethodSource("malformedIds")
     void replacesMalformedInboundIds(String malformed) throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(RequestIdFilter.HEADER, malformed);
@@ -46,6 +47,10 @@ class RequestIdFilterTest {
 
         assertThat(response.getHeader(RequestIdFilter.HEADER)).isNotEqualTo(malformed);
         assertThat(UUID.fromString(response.getHeader(RequestIdFilter.HEADER))).isNotNull();
+    }
+
+    static Stream<String> malformedIds() {
+        return Stream.of("", "has space", "<script>", "line\nbreak", "x".repeat(65));
     }
 
     @Test

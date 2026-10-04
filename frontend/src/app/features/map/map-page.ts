@@ -1,10 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 
-/**
- * Landing page. The interactive map (Leaflet, viewport-based loading, clustering) replaces
- * the placeholder region in Phase 5; the page structure and headings stay the same.
- */
 @Component({
   selector: 'cp-map-page',
   imports: [TranslocoDirective],
@@ -29,7 +25,6 @@ import { TranslocoDirective } from '@jsverse/transloco';
       min-block-size: clamp(18rem, 55vh, 36rem);
       border: 1px solid var(--cp-kerb);
       border-radius: var(--cp-radius-control);
-      /* A survey grid: the map's footprint before tiles load. */
       background-color: var(--cp-surface);
       background-image:
         linear-gradient(var(--cp-kerb) 1px, transparent 1px),

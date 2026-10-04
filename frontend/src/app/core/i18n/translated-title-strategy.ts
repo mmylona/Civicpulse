@@ -4,10 +4,6 @@ import { RouterStateSnapshot, TitleStrategy } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { take } from 'rxjs';
 
-/**
- * Sets the document title from a translation key in the route's `title`.
- * A distinct title per page is what screen readers announce after navigation.
- */
 @Injectable()
 export class TranslatedTitleStrategy extends TitleStrategy {
   private readonly title = inject(Title);

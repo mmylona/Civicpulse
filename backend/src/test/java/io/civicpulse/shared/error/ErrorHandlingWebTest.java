@@ -35,10 +35,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Verifies the API error contract (docs/api/README.md) for every failure category,
- * through the real Spring MVC stack.
- */
 @WebMvcTest
 @Import({ApiErrorResponses.class, ErrorHandlingWebTest.FailingController.class})
 class ErrorHandlingWebTest {

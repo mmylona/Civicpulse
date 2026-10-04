@@ -1,47 +1,39 @@
-# 002 — Use PostgreSQL with PostGIS as the only datastore
+# ADR 002: PostgreSQL and PostGIS
 
-- **Status:** accepted
-- **Date:** 2026-10-03
+Status: accepted
+Date: 2026-10-03
 
 ## Context
 
-The core queries are spatial: reports near a point, reports inside the map
-viewport, clusters per zoom level, candidates for duplicate detection within a
-category-specific radius, proximity to critical infrastructure. Duplicate
-detection also needs text similarity between short descriptions. Dashboards need
-set-based aggregation by time, category and area.
+Most important queries are spatial: reports near a point, reports in the visible
+map area, clusters per zoom level, duplicate candidates within a radius, distance
+to hospitals and schools. Duplicate detection also compares short descriptions.
+Dashboards aggregate by time, category and area.
 
 ## Decision
 
-- **PostgreSQL** (17 in development and CI) with the **PostGIS**, **pg_trgm** and
-  **citext** extensions, enabled in the baseline migration `V1__baseline.sql`.
-- Report locations are stored as `geography(Point, 4326)` with a GIST index
-  (partial: open reports only), so `ST_DWithin` distances are in metres and the
-  index is used. Details and query plans land in `docs/database/` in Phase 4.
-- **Flyway owns the schema.** Hibernate runs with `ddl-auto=validate` in every
-  environment. Merged migrations are never edited.
-- Integration tests run against the **same PostGIS image** through Testcontainers,
-  never against H2 or an in-memory substitute.
+- PostgreSQL 17 with the PostGIS, pg_trgm and citext extensions, created in
+  `V1__baseline.sql`.
+- Report locations are `geography(Point, 4326)` with a GIST index, so
+  `ST_DWithin` works in metres and uses the index.
+- Flyway manages the schema. Hibernate runs with `ddl-auto=validate`.
+- Integration tests use the same PostGIS image through Testcontainers, not H2.
 
 ## Alternatives
 
-- **Plain PostgreSQL with lat/lng columns and Haversine in SQL.** No spatial
-  index, so every radius query scans the table. Rejected.
-- **`geometry` in a projected CRS** (Swiss LV95 for the Bern seed data).
-  Marginally faster planar maths, but ties the schema to one city. Rejected for
-  portability; clustering casts to geometry only after index filtering.
-- **Elasticsearch or a dedicated search engine** for text and geo. A second
-  stateful system to run and keep consistent, for data volumes PostgreSQL
-  handles comfortably. Rejected.
-- **H2 for tests.** No PostGIS, different SQL dialect; tests would pass while
-  production queries fail. Rejected.
+- Latitude/longitude columns with Haversine in SQL: no spatial index, so every
+  radius query scans the table.
+- `geometry` in a projected CRS (Swiss LV95 for Bern): slightly faster, but ties
+  the schema to one city.
+- Elasticsearch for text and geo search: a second datastore to run and keep in
+  sync, which this data volume doesn't need.
+- H2 in tests: no PostGIS and a different SQL dialect, so tests could pass while
+  real queries fail.
 
 ## Consequences
 
-- One stateful dependency; backups, migrations and local setup stay simple.
-- Spatial logic is partly in SQL, so it is tested with real PostGIS in
-  integration tests rather than only in unit tests.
-- The `postgis/postgis` image is published for `linux/amd64`; Apple Silicon
-  machines run it under emulation (slower, but functional).
-- **Revisit when:** data volume or query load outgrows a single primary, or
-  free-text search needs ranking beyond trigram similarity.
+- One stateful service to run, back up and migrate.
+- Part of the spatial logic is in SQL and is covered by integration tests.
+- The `postgis/postgis` image is amd64 only and runs under emulation on Apple
+  Silicon.
+- Revisit if load outgrows a single database or search needs proper ranking.

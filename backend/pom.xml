@@ -20,9 +20,8 @@
     <properties>
         <java.version>21</java.version>
         <spring-modulith.version>1.4.13</spring-modulith.version>
-        <!-- The PostGIS image used by integration tests; keep in sync with docker-compose.yml. -->
+        <!-- same image as docker-compose.yml -->
         <postgis.image>postgis/postgis:17-3.5</postgis.image>
-        <!-- `-DskipUnitTests` lets CI run integration tests as a separate step without repeating unit tests. -->
         <skipUnitTests>false</skipUnitTests>
     </properties>
 
@@ -39,7 +38,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Web, validation, operations -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -58,7 +56,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Persistence: PostgreSQL + PostGIS, schema owned by Flyway -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -77,13 +74,11 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Module boundaries (ADR-001) -->
         <dependency>
             <groupId>org.springframework.modulith</groupId>
             <artifactId>spring-modulith-starter-core</artifactId>
         </dependency>
 
-        <!-- Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -125,12 +120,11 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Unit tests (*Test, *Tests) run in `test`; integration tests (*IT) run in `integration-test`. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!-- `skip`, not `skipTests`, so a plain `-DskipTests` still skips everything. -->
+                    <!-- lets CI run only the *IT tests with -DskipUnitTests -->
                     <skip>${skipUnitTests}</skip>
                 </configuration>
             </plugin>

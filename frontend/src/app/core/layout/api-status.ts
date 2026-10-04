@@ -2,10 +2,6 @@ import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/cor
 import { TranslocoDirective } from '@jsverse/transloco';
 import { SystemStatusService } from '../system/system-status.service';
 
-/**
- * Footer line that tells people whether the city service is reachable.
- * It is a polite live region, so a change (e.g. going offline) is announced once.
- */
 @Component({
   selector: 'cp-api-status',
   imports: [TranslocoDirective],
@@ -44,7 +40,6 @@ import { SystemStatusService } from '../system/system-status.service';
       border-radius: 50%;
       flex: none;
     }
-    /* Keep the dot beside its message on narrow screens; only the button wraps. */
     .dot + span {
       flex: 1 1 14rem;
     }

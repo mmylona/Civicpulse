@@ -26,13 +26,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-/**
- * Maps every exception that reaches a controller boundary to the uniform {@link ApiError}.
- *
- * <p>Rules: expected failures keep their safe message; framework failures get a fixed
- * message; unexpected failures are logged with the request id and returned as a generic
- * 500. Exception messages, class names and stack traces are never written to the response.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -123,7 +116,6 @@ public class GlobalExceptionHandler {
         return responses.of(CommonErrorCode.NOT_ACCEPTABLE, request);
     }
 
-    /** Other framework exceptions that carry their own status (e.g. ResponseStatusException). */
     @ExceptionHandler(ErrorResponseException.class)
     ResponseEntity<ApiError> handleErrorResponse(ErrorResponseException ex, HttpServletRequest request) {
         int status = ex.getStatusCode().value();
@@ -145,7 +137,6 @@ public class GlobalExceptionHandler {
         return responses.of(code, HttpStatus.BAD_REQUEST, code.defaultMessage(), request, violations);
     }
 
-    /** The constraint name from Spring's message codes: {@code "NotBlank.form.title"} … {@code "NotBlank"}. */
     private static String constraintName(MessageSourceResolvable error) {
         String[] codes = error.getCodes();
         if (codes == null || codes.length == 0) {

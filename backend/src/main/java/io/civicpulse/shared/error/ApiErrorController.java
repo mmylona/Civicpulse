@@ -11,11 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Replaces Spring Boot's default {@code /error} endpoint so that errors raised outside
- * controllers (servlet container, filters) use the same {@link ApiError} shape instead of
- * the framework's default body.
- */
 @RestController
 public class ApiErrorController implements ErrorController {
 

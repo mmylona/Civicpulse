@@ -2,7 +2,6 @@ package io.civicpulse.shared.error;
 
 import org.springframework.http.HttpStatus;
 
-/** Error codes that are not owned by any business module. */
 public enum CommonErrorCode implements ErrorCode {
 
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "The request contains invalid values"),
@@ -37,10 +36,6 @@ public enum CommonErrorCode implements ErrorCode {
         return defaultMessage;
     }
 
-    /**
-     * Best-effort code for a status raised by the servlet container or framework rather
-     * than by our code. The caller keeps the original status; only the code is chosen here.
-     */
     static ErrorCode forStatus(int status) {
         return switch (status) {
             case 400 -> MALFORMED_REQUEST;

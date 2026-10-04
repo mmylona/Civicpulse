@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 
-/** Route titles are translation keys, resolved by TranslatedTitleStrategy. */
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'map' },
   {

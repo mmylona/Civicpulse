@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-/** Boots the whole application against PostGIS and checks it over real HTTP. */
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "management.server.port=0")
@@ -59,7 +58,6 @@ class ApplicationSmokeIT {
         assertThat(response.getBody()).containsEntry("status", "UP");
     }
 
-    /** Actuator must not be reachable through the public port that nginx proxies. */
     @Test
     void actuatorIsNotExposedOnThePublicPort() {
         ResponseEntity<String> response = http.getForEntity("/actuator/health", String.class);

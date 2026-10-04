@@ -93,7 +93,6 @@
   border-block-end-color: var(--cp-marking);
 }
 
-/* The centre line of a road: the one place the marking yellow is used as decoration. */
 .lane-line {
   block-size: 4px;
   background: repeating-linear-gradient(90deg, var(--cp-marking) 0 2.5rem, transparent 2.5rem 4rem);

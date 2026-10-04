@@ -23,8 +23,7 @@ export class App {
   private readonly main = viewChild.required<ElementRef<HTMLElement>>('main');
 
   constructor() {
-    // After in-app navigation, move focus to the new page's content, as a full page load
-    // would. Keyboard and screen-reader users then start reading at the new page.
+    // move focus to the new page for keyboard and screen reader users
     inject(Router)
       .events.pipe(
         filter((event) => event instanceof NavigationEnd),

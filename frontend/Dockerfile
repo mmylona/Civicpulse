@@ -1,6 +1,5 @@
 # syntax=docker/dockerfile:1.7
 
-# --- Build ------------------------------------------------------------------
 FROM node:24-alpine AS build
 WORKDIR /app
 
@@ -10,7 +9,6 @@ RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 COPY . .
 RUN npm run build
 
-# --- Runtime: static files + reverse proxy to the backend ---------------------
 FROM nginxinc/nginx-unprivileged:stable-alpine
 
 COPY nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf

@@ -23,7 +23,7 @@ describe('App shell', () => {
   });
 
   afterEach(() => {
-    // The footer checks the API once on start-up; the shell tests do not care about it.
+    // drain the footer's status request
     TestBed.inject(HttpTestingController).match('/api/v1/system/info');
   });
 

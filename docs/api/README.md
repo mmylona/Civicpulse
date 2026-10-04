@@ -1,12 +1,10 @@
-# API conventions
+# API
 
-The REST API is versioned under `/api/v1`. OpenAPI documentation is generated
-from the code once the first business endpoints exist (Phase 2).
+All endpoints are under `/api/v1`.
 
-## Error model
+## Error format
 
-Every error response, for every status code, has this shape
-(`Content-Type: application/json`):
+Every error response has this shape (`Content-Type: application/json`):
 
 ```json
 {
@@ -22,34 +20,29 @@ Every error response, for every status code, has this shape
 
 | Field | Meaning |
 | --- | --- |
-| `timestamp` | When the error was produced (UTC, ISO-8601) |
-| `status` | HTTP status, repeated for clients that only see the body |
-| `code` | Stable, machine-readable error code; clients and translations key on this |
-| `message` | Human-readable English summary; never contains exception messages, SQL or class names |
-| `path` | Request path |
-| `traceId` | The request's `X-Request-Id`; quote it when reporting a problem |
-| `errors` | Field-level validation errors: `{ "field", "code", "message" }`; empty otherwise |
+| `timestamp` | when the error happened (UTC) |
+| `status` | HTTP status |
+| `code` | stable error code for clients and translations |
+| `message` | short English description, never internal details |
+| `path` | request path |
+| `traceId` | the request's `X-Request-Id` |
+| `errors` | field errors (`field`, `code`, `message`) for validation failures |
 
-The shape is a plain record rather than RFC 9457 `ProblemDetail` so it matches
-the documented contract exactly, without duplicated fields (`detail` vs
-`message`, `instance` vs `path`).
+A plain record is used instead of Spring's `ProblemDetail` to keep exactly these
+fields without duplicates like `detail`/`message`.
 
 ## Error codes
 
 | Status | Code | When |
 | --- | --- | --- |
-| 400 | `VALIDATION_FAILED` | body or parameters fail validation; see `errors[]` |
-| 400 | `MALFORMED_REQUEST` | unreadable JSON, wrong parameter type |
-| 404 | `RESOURCE_NOT_FOUND` | no endpoint or resource at this path |
-| 405 | `METHOD_NOT_ALLOWED` | endpoint exists, method does not |
+| 400 | `VALIDATION_FAILED` | invalid body or parameters, see `errors` |
+| 400 | `MALFORMED_REQUEST` | unreadable JSON or wrong parameter type |
+| 404 | `RESOURCE_NOT_FOUND` | unknown path or resource |
+| 405 | `METHOD_NOT_ALLOWED` | method not supported on this path |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | wrong `Content-Type` |
-| 500 | `INTERNAL_ERROR` | anything unexpected; details only in server logs under `traceId` |
-
-Business codes (`REPORT_NOT_FOUND`, `INVALID_STATUS_TRANSITION`, …) are added
-with the modules that raise them.
+| 500 | `INTERNAL_ERROR` | unexpected error; details only in the logs |
 
 ## Request ids
 
-Clients may send `X-Request-Id` (1–64 characters of `A–Z a–z 0–9 . _ -`).
-Otherwise the server generates a UUID. The id is returned in the
-`X-Request-Id` response header on every response.
+Clients can send `X-Request-Id` (1-64 characters of `A-Z a-z 0-9 . _ -`).
+Otherwise the server generates one. It is returned on every response.

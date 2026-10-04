@@ -2,13 +2,7 @@ package io.civicpulse.shared.error;
 
 import java.util.Objects;
 
-/**
- * Base class for expected business failures (not found, invalid transition, conflict…).
- *
- * <p>The message must be safe to return to the caller: it ends up in the error body.
- * Never put exception messages, SQL or internal identifiers that callers must not see
- * into it.
- */
+// The message is returned to the client, so it must not contain internal details.
 public class ApiException extends RuntimeException {
 
     private final transient ErrorCode errorCode;

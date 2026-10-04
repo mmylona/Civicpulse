@@ -8,10 +8,8 @@ spring:
     hikari:
       pool-name: civicpulse-db
   jpa:
-    # The web layer must not lazily load entities after the transaction ends.
     open-in-view: false
     hibernate:
-      # Flyway owns the schema (ADR-002); Hibernate only checks its mapping against it.
       ddl-auto: validate
     properties:
       hibernate.jdbc.time_zone: UTC
@@ -27,7 +25,6 @@ spring:
 server:
   port: 8080
   shutdown: graceful
-  # Running behind nginx: honour X-Forwarded-* for scheme, host and client address.
   forward-headers-strategy: framework
   error:
     whitelabel:
@@ -39,7 +36,7 @@ server:
 
 management:
   server:
-    # Separate port, never proxied by nginx (see SECURITY.md).
+    # not proxied by nginx
     port: 8081
   endpoints:
     web:
@@ -51,8 +48,6 @@ management:
         enabled: true
       show-details: never
       group:
-        # Ready only when the database answers; mail, storage and the LLM are optional
-        # adapters and must not take the application out of service.
         readiness:
           include: readinessState, db
   info:
@@ -65,8 +60,6 @@ civicpulse:
 
 logging:
   pattern:
-    # Plain-text logs (outside Docker) show the request id; structured JSON logs carry
-    # it as the `requestId` field automatically.
     correlation: "[%X{requestId:-}] "
   level:
     io.civicpulse: INFO

@@ -1,37 +1,33 @@
-# Security Policy
-
-CivicPulse is a portfolio project, but it is built and documented as if it
-handled real citizens' data. This file describes the security model and its
-known limitations. It grows with each implementation phase.
+# Security
 
 ## Reporting a vulnerability
 
-Please do not open a public issue. Use GitHub's private vulnerability reporting
-("Security" tab → "Report a vulnerability") and include steps to reproduce.
+Please don't open a public issue. Use GitHub's private vulnerability reporting
+(Security tab, "Report a vulnerability").
 
-## Security model (current state: Phase 1)
+## Current state
 
-| Area | Current state | Planned |
-| --- | --- | --- |
-| Authentication | None yet; only health and system-info endpoints exist | Phase 2: JWT access tokens + rotating refresh tokens |
-| Authorization | None yet | Phase 2–3: URL rules, resource policies, query-level visibility |
-| Error responses | Uniform JSON error model; no stack traces, exception messages or class names leave the server | — |
-| Request tracing | Every response carries `X-Request-Id`; the same id is in logs and error bodies | Phase 13: distributed tracing |
-| Actuator | Only `health`, `info` and `prometheus`, on a separate management port (8081) that nginx does not proxy | — |
-| Secrets | Read from environment variables; `.env` is git-ignored; `.env.example` holds development-only values | Phase 14: gitleaks in CI |
-| Containers | Backend and frontend run as non-root users | Phase 14: image scanning |
+| Area | Status |
+| --- | --- |
+| Authentication | Not implemented yet. Only the health and system-info endpoints exist. |
+| Authorization | Not implemented yet. |
+| Error responses | One JSON format for all errors; no stack traces, exception messages or class names in responses. |
+| Request tracing | `X-Request-Id` on every response, also logged and included in error bodies. |
+| Actuator | Only `health`, `info` and `prometheus`, on port 8081, which nginx does not proxy. |
+| Secrets | Environment variables only; `.env` is git-ignored. |
+| Containers | Backend and frontend run as non-root users. |
 
-## Principles that will not change
+## Rules
 
-- Backend authorization is always enforced; frontend guards only improve navigation.
-- Internal operator notes never appear in responses a citizen or anonymous user can obtain.
-- Client-provided file metadata (name, type, size) is never trusted.
-- No secret is ever committed. Demo credentials are documented as demo-only.
+- Authorization is always enforced in the backend; frontend route guards are
+  only for navigation.
+- Internal operator notes are never returned to citizens or anonymous users.
+- File names, types and sizes sent by clients are not trusted.
+- Demo credentials are for local use only.
 
 ## Known limitations
 
-- Development defaults in `.env.example` are public by design; any deployment
-  beyond a laptop must replace every value.
-- The client-supplied `X-Request-Id` is accepted only if it is 1–64 characters of
-  `[A-Za-z0-9._-]`; otherwise a new id is generated. It is a correlation aid,
-  not a security control.
+- The values in `.env.example` are public development defaults. Replace all of
+  them for any deployment.
+- A client-supplied `X-Request-Id` is accepted only if it is 1-64 characters of
+  `A-Z a-z 0-9 . _ -`. It is for correlating logs, not a security control.

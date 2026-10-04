@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: civicpulse
+  datasource:
+    url: ${CIVICPULSE_DB_URL:jdbc:postgresql://localhost:5432/civicpulse}
+    username: ${POSTGRES_USER:civicpulse}
+    password: ${POSTGRES_PASSWORD:civicpulse-dev-only}
+    hikari:
+      pool-name: civicpulse-db
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+  threads:
+    virtual:
+      enabled: true
+  mvc:
+    problemdetails:
+      enabled: false
+
+server:
+  port: 8080
+  shutdown: graceful
+  forward-headers-strategy: framework
+  error:
+    whitelabel:
+      enabled: false
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+    include-exception: false
+
+management:
+  server:
+    # not proxied by nginx
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+      group:
+        readiness:
+          include: readinessState, db
+  info:
+    build:
+      enabled: true
+
+civicpulse:
+  cors:
+    allowed-origins: ${CIVICPULSE_CORS_ALLOWED_ORIGINS:http://localhost:4200}
+
+logging:
+  pattern:
+    correlation: "[%X{requestId:-}] "
+  level:
+    io.civicpulse: INFO
+    org.flywaydb: INFO

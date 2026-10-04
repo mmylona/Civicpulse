@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-/** Builds {@link ApiError} responses consistently for the exception handler and the error controller. */
 @Component
 public class ApiErrorResponses {
 

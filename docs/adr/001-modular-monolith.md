@@ -1,55 +1,45 @@
-# 001 — Build CivicPulse as a modular monolith
+# ADR 001: Modular monolith
 
-- **Status:** accepted
-- **Date:** 2026-10-03
+Status: accepted
+Date: 2026-10-03
 
 ## Context
 
-CivicPulse has ten areas of responsibility (identity, reports, storage, geo,
-classification, duplicates, prioritization, notifications, analytics, audit).
-Several of them must change data consistently in one step: changing a report's
-status writes the report, its timeline and an outgoing event together.
+The system has about ten areas of responsibility (identity, reports, storage,
+geo, classification, duplicates, prioritization, notifications, analytics,
+audit). Some changes have to touch several of them in one transaction, e.g. a
+status change writes the report, its timeline entry and an outgoing event.
 
-The team is one developer. Expected load is one city: thousands of open reports,
-not millions of requests per second. There is no independent scaling need and
-no second team that needs to deploy separately.
-
-The risk of a monolith is erosion: modules quietly reaching into each other's
-tables until nothing can be changed safely.
+It is built by one developer and serves one city, so there is no need to scale
+or deploy parts independently. The main risk of a monolith is that modules slowly
+start using each other's internals.
 
 ## Decision
 
-- Ship **one Spring Boot deployable** with one PostgreSQL database.
+- One Spring Boot application and one PostgreSQL database.
 - Each module is a top-level package `io.civicpulse.<module>`. Other modules may
-  use only its published API types and its domain events, never its repositories
-  or internal classes.
-- Boundaries are **verified by a test** (`ModularityTests`, Spring Modulith's
-  `ApplicationModules.verify()`), so a violation fails the build rather than a
-  code review.
-- `shared` is an open module (the shared kernel): error model, request id,
-  clock, paging. It must not depend on any other module.
-- Cross-module side effects travel as domain events persisted in the same
-  transaction (transactional outbox, see ADR-006 when written).
+  use its public API and events only.
+- Boundaries are checked by `ModularityTests` (Spring Modulith), so a violation
+  fails the build.
+- `shared` is an open module with the error model, request id handling and
+  clock. It does not depend on other modules.
+- Side effects between modules go through events stored in the same transaction
+  as the change (outbox).
 
 ## Alternatives
 
-- **Microservices.** Independent deployment and scaling we do not need, paid for
-  with distributed transactions, network failure handling, and a much heavier
-  local and CI setup. Rejected.
-- **Classic layered monolith** (`controllers/`, `services/`, `repositories/` at the
-  top). Simple at first, but nothing stops any service calling any repository.
-  Rejected.
-- **Maven multi-module build** (one Maven module per domain module). Gives
-  compile-time boundaries, but adds build ceremony for every new module and
-  makes refactoring module boundaries slow. Kept as an option if the test-based
-  verification proves too weak.
+- Microservices: independent deployment we don't need, at the cost of
+  distributed transactions and a much heavier local setup.
+- Layered packages (`controllers/`, `services/`, `repositories/`): nothing stops
+  any service from using any repository.
+- One Maven module per domain module: stronger compile-time boundaries, but more
+  build setup for each module. Can be revisited if the test-based check is not
+  enough.
 
 ## Consequences
 
-- One deployment, one transaction manager, trivial local setup (`docker compose up`).
-- Boundary rules are explicit and enforced; the module structure can be rendered
-  as documentation by Spring Modulith.
-- A module could later be extracted into a service because its only coupling is
-  its API package and its events.
-- **Revisit when:** a module needs to scale or deploy independently, or a second
-  team owns part of the system.
+- Single deployment, simple local setup.
+- Module rules are explicit and enforced in CI.
+- A module could be extracted later, since it is only coupled through its API
+  and events.
+- Revisit if a module needs to scale on its own or another team takes it over.

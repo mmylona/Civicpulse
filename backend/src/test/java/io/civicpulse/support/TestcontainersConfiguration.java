@@ -7,13 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-/**
- * A real PostgreSQL + PostGIS database for integration tests (never H2; see ADR-002).
- *
- * <p>Declared as a bean so Spring starts it once per cached application context and wires
- * the datasource through {@link ServiceConnection}. The image tag comes from the
- * {@code postgis.image} Maven property so tests and docker-compose use the same version.
- */
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 
@@ -23,8 +16,7 @@ public class TestcontainersConfiguration {
     @Bean
     @ServiceConnection
     PostgreSQLContainer<?> postgisContainer() {
-        // The PostGIS image is amd64-only; under emulation on Apple Silicon its first start
-        // (initdb + extension set-up) can take well over the default 60 seconds.
+        // amd64-only image: under emulation (Apple Silicon) the first start can exceed 60 s
         return new PostgreSQLContainer<>(DockerImageName.parse(POSTGIS_IMAGE).asCompatibleSubstituteFor("postgres"))
                 .withStartupTimeout(Duration.ofMinutes(3));
     }

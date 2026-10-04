@@ -14,10 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-/**
- * Migrates an empty PostGIS database from V1 and checks the extensions the schema relies on.
- * Runs on every build, so the migration chain stays reproducible.
- */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
 class FlywayMigrationIT {
@@ -45,7 +41,6 @@ class FlywayMigrationIT {
         assertThat(extensions).contains("postgis", "pg_trgm", "citext");
     }
 
-    /** The two reports from the spec's duplicate-detection example (Bern Central Station). */
     @Test
     void geographyDistanceIsMeasuredInMetres() {
         Double metres = jdbc.queryForObject("""

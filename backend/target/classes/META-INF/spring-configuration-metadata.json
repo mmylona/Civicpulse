@@ -1,0 +1,20 @@
+{
+  "groups": [
+    {
+      "name": "civicpulse.cors",
+      "type": "io.civicpulse.shared.web.CorsProperties",
+      "sourceType": "io.civicpulse.shared.web.CorsProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "civicpulse.cors.allowed-origins",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "io.civicpulse.shared.web.CorsProperties"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}
