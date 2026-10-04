@@ -30,6 +30,17 @@
           </li>
         </ul>
       </nav>
+
+      <div class="session">
+        @if (user(); as user) {
+          <span class="session__name">{{ user.displayName }}</span>
+          <button class="session__action" type="button" (click)="signOut()">
+            {{ t('nav.signOut') }}
+          </button>
+        } @else {
+          <a class="session__action" routerLink="/login">{{ t('nav.signIn') }}</a>
+        }
+      </div>
     </div>
     <div class="lane-line" aria-hidden="true"></div>
   </header>

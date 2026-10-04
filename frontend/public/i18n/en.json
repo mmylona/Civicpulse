@@ -6,7 +6,9 @@
     "primaryNavigation": "Main"
   },
   "nav": {
-    "map": "Map"
+    "map": "Map",
+    "signIn": "Sign in",
+    "signOut": "Sign out"
   },
   "status": {
     "checking": "Connecting to the city service…",
@@ -27,6 +29,65 @@
       "heading": "This page doesn't exist",
       "body": "The link may be mistyped, or the page may have moved.",
       "action": "Go to the city map"
+    },
+    "login": {
+      "title": "Sign in",
+      "heading": "Sign in",
+      "intro": "Sign in to report problems and follow the ones you reported.",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "noAccount": "No account yet?",
+      "register": "Create an account"
+    },
+    "register": {
+      "title": "Create an account",
+      "heading": "Create an account",
+      "intro": "You need an account to report a problem, so we can tell you when it is fixed.",
+      "displayName": "Name",
+      "displayNameHint": "Shown to city staff on your reports",
+      "email": "Email address",
+      "password": "Password",
+      "passwordHint": "At least 10 characters. A few random words work well.",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "forbidden": {
+      "title": "No access",
+      "heading": "You don't have access to this page",
+      "body": "Your account doesn't have the role this page needs. Ask an administrator if you think it should."
     }
+  },
+  "roles": {
+    "CITIZEN": "Citizen",
+    "MODERATOR": "Moderator",
+    "CITY_OPERATOR": "City operator",
+    "ADMIN": "Admin"
+  },
+  "forms": {
+    "summaryHeading": "Please fix the following",
+    "errors": {
+      "required": "Fill in this field",
+      "email": "Enter an email address like name@example.org",
+      "password": "Use at least 10 characters (no more than 72 bytes)",
+      "tooLong": "This is too long",
+      "emailTaken": "An account with this email already exists. Sign in instead",
+      "invalid": "Check this value"
+    }
+  },
+  "errors": {
+    "INVALID_CREDENTIALS": "The email or password is incorrect, or the account is locked for 15 minutes after too many attempts.",
+    "RATE_LIMITED": "Too many attempts from this device. Wait a minute and try again.",
+    "EMAIL_ALREADY_REGISTERED": "An account with this email already exists. Sign in instead.",
+    "VALIDATION_FAILED": "Some values are not valid. Check the form and try again.",
+    "ACCESS_DENIED": "You don't have permission to do this.",
+    "AUTHENTICATION_REQUIRED": "Your session has ended. Sign in again.",
+    "TOKEN_INVALID": "Your session has ended. Sign in again.",
+    "NETWORK_ERROR": "The city service can't be reached. Check your connection and try again.",
+    "INTERNAL_ERROR": "Something went wrong on our side. Try again in a moment.",
+    "UNEXPECTED_ERROR": "Something went wrong. Try again in a moment."
   }
 }

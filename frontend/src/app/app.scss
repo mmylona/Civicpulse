@@ -36,9 +36,10 @@
 
 .masthead__inner {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--cp-space-4);
+  gap: var(--cp-space-2) var(--cp-space-4);
   min-block-size: 4rem;
 }
 
@@ -65,6 +66,45 @@
 .brand:focus-visible,
 .nav a:focus-visible {
   outline-color: var(--cp-marking);
+}
+
+.session {
+  display: flex;
+  align-items: center;
+  gap: var(--cp-space-3);
+  font-size: var(--cp-step--1);
+}
+
+.session__name {
+  color: var(--cp-on-asphalt-muted);
+}
+
+.session__action {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.25rem;
+  padding: 0 var(--cp-space-3);
+  font: inherit;
+  font-weight: 650;
+  color: var(--cp-on-asphalt);
+  background: transparent;
+  border: 1px solid var(--cp-on-asphalt-muted);
+  border-radius: var(--cp-radius-control);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.session__action:hover {
+  border-color: var(--cp-marking);
+  color: var(--cp-on-asphalt);
+}
+
+.session__action:focus-visible {
+  outline-color: var(--cp-marking);
+}
+
+.nav {
+  margin-inline-start: auto;
 }
 
 .nav ul {
@@ -100,6 +140,7 @@
 
 .page {
   width: 100%;
+  min-width: 0;
   max-width: var(--cp-content-width);
   margin-inline: auto;
   padding: var(--cp-space-5) var(--cp-space-3) var(--cp-space-6);
