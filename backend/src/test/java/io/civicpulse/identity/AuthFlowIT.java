@@ -145,6 +145,19 @@ class AuthFlowIT {
     }
 
     @Test
+    void sameOriginPostBehindProxyIsNotBlockedByCors() throws Exception {
+        String body = "{\"email\": \"%s\", \"password\": \"%s\"}".formatted(uniqueEmail(), PASSWORD);
+
+        mvc.perform(json(post("/api/v1/auth/login"), body)
+                        .header("Origin", "http://localhost:8080")
+                        .header("X-Forwarded-Proto", "http")
+                        .header("X-Forwarded-Host", "localhost:8080")
+                        .with(fromNewAddress()))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
+    }
+
+    @Test
     void loginIsRateLimited() throws Exception {
         RequestPostProcessor sameClient = fromNewAddress();
         String body = "{\"email\": \"%s\", \"password\": \"%s\"}".formatted(uniqueEmail(), PASSWORD);
