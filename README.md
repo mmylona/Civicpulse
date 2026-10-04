@@ -6,7 +6,7 @@ Citizens report problems in their city (potholes, broken street lights, illegal
 dumping, blocked ramps) and follow them until they are fixed. City teams triage,
 deduplicate, prioritize and resolve the reports.
 
-![CivicPulse](docs/images/app-shell.png)
+![User administration in CivicPulse](docs/images/admin-users.png)
 
 ## Run it
 
@@ -17,6 +17,18 @@ docker compose up --build
 Then open <http://localhost:8080>. No configuration is needed; see
 [local setup](docs/development/local-setup.md) for working on the backend or
 frontend directly.
+
+### Demo accounts
+
+The local setup runs with the `demo` profile, which creates these accounts.
+They are for local use only.
+
+| Email | Role | Password |
+| --- | --- | --- |
+| `citizen@demo.local` | Citizen | `civicpulse-demo` |
+| `moderator@demo.local` | Moderator | `civicpulse-demo` |
+| `operator@demo.local` | City operator (Roads and Infrastructure) | `civicpulse-demo` |
+| `admin@demo.local` | Admin | `civicpulse-demo` |
 
 ## Architecture
 
@@ -33,6 +45,7 @@ flowchart LR
 - [Architecture overview](docs/architecture/overview.md)
 - [ADR 001: Modular monolith](docs/adr/001-modular-monolith.md)
 - [ADR 002: PostgreSQL and PostGIS](docs/adr/002-postgresql-postgis.md)
+- [ADR 003: Authentication](docs/adr/003-authentication.md)
 - [API conventions and error format](docs/api/README.md)
 - [Database conventions](docs/database/README.md)
 
@@ -40,7 +53,7 @@ flowchart LR
 
 | Area | Technology |
 | --- | --- |
-| Backend | Java 21, Spring Boot 3.5, Spring Modulith, Flyway |
+| Backend | Java 21, Spring Boot 3.5, Spring Security, Spring Modulith, Flyway |
 | Database | PostgreSQL 17, PostGIS, pg_trgm |
 | Frontend | Angular 22, TypeScript, Transloco |
 | Tests | JUnit 5, Testcontainers, Vitest |
@@ -48,23 +61,25 @@ flowchart LR
 
 ## Engineering highlights
 
-- Module boundaries are checked by a test (`ModularityTests`), so a module
-  reaching into another module's internals fails the build.
-- Every API error, including unknown paths and errors raised outside
-  controllers, uses one JSON format with a `traceId`. Stack traces and exception
-  messages never reach the client.
-- Each response has an `X-Request-Id` header; the same id appears in the logs.
-- Integration tests run against a real PostGIS container and migrate an empty
-  database on every build.
-- nginx sends a strict Content Security Policy, and actuator endpoints run on a
-  separate port that nginx does not expose.
-- Accessibility basics from the start: skip link, focus moved on navigation,
-  page titles per route, visible focus, reduced motion respected.
+- JWT access tokens (15 min) kept in memory, refresh tokens in an HttpOnly cookie
+  and rotated on every refresh. A reused refresh token revokes the session. See
+  [ADR 003](docs/adr/003-authentication.md).
+- Roles checked on the backend by URL rules and `@PreAuthorize`; integration
+  tests cover each role on the admin endpoints.
+- Lockout after 5 failed logins, rate limiting per IP.
+- Append-only audit log (a trigger blocks UPDATE/DELETE), written in the same
+  transaction as the change.
+- `ModularityTests` fails the build if a module uses another module's internals.
+- One JSON error format with a `traceId` for every error.
+- `X-Request-Id` on every response and in the logs.
+- Integration tests run against PostGIS in Testcontainers.
+- CSP and other security headers in nginx; actuator on a separate port.
+- Basic accessibility: skip link, focus handling on navigation, page titles.
 
 ## Roadmap
 
 - [x] Project setup, CI, Docker
-- [ ] Authentication, users and roles
+- [x] Authentication, users, roles and audit log
 - [ ] Reports and their lifecycle
 - [ ] Geospatial search
 - [ ] Map and report form for citizens

@@ -25,7 +25,7 @@ taking the app down.
 
 | Module | Responsibility |
 | --- | --- |
-| `shared` | error format, request ids, clock (open module) |
+| `shared` | error format, request ids, clock, security configuration, rate limiting (open module) |
 | `identity` | users, roles, teams, login, refresh tokens |
 | `reports` | reports and their lifecycle, timeline, comments, confirmations, assignments |
 | `geo` | districts, critical sites, city boundary |
@@ -37,7 +37,8 @@ taking the app down.
 | `analytics` | dashboard figures, hotspots |
 | `audit` | audit log |
 
-Only `shared` exists so far; the others are added as they are built.
+`shared`, `identity` and `audit` exist so far; the others are added as they are built.
+`audit` listens to events published by `identity` and never calls it directly.
 `ModularityTests` checks the boundaries ([ADR 001](../adr/001-modular-monolith.md)).
 
 ## Inside a module

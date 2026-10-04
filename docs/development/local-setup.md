@@ -30,7 +30,17 @@ mvn verify                   # unit + integration tests (needs Docker)
 mvn spring-boot:test-run     # run on :8080 with a temporary PostGIS container
 ```
 
-Or start only the database with `docker compose up db` and run `mvn spring-boot:run`.
+Or start only the database with `docker compose up db` and run:
+
+```bash
+CIVICPULSE_JWT_SECRET=local-dev-secret-at-least-32-bytes-long \
+CIVICPULSE_DB_URL=jdbc:postgresql://localhost:5433/civicpulse \
+SPRING_PROFILES_ACTIVE=demo \
+mvn spring-boot:run
+```
+
+The backend refuses to start without a JWT secret of at least 32 bytes. The
+`demo` profile creates the demo accounts listed in the README.
 
 | URL | |
 | --- | --- |
