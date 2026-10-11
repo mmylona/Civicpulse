@@ -1,7 +1,8 @@
 # API
 
 All endpoints are under `/api/v1`. Every endpoint needs a bearer token unless
-marked public.
+marked public. Public endpoints also accept a token and then return more
+(for example `mine` on a report).
 
 ## Endpoints
 
@@ -19,6 +20,20 @@ marked public.
 | PUT | `/admin/users/{id}/team` | ADMIN | `{"teamId": "..."}` or `null` |
 | GET | `/admin/teams` | ADMIN | all teams |
 | GET | `/admin/audit?action=&actorId=&targetType=&targetId=&page=&size=` | ADMIN | audit log, newest first |
+| GET | `/categories` | public | active categories |
+| POST | `/reports` | CITIZEN | new report (201), optional `Idempotency-Key` header |
+| GET | `/reports?status=&category=&q=&page=&size=` | public | newest first; staff can also filter by `teamId` and `assignee=me` |
+| GET | `/reports/mine` | signed in | the caller's own reports |
+| GET | `/reports/{id}` | public | details with `ETag`; staff get an extra `staff` object |
+| PATCH | `/reports/{id}` | reporter | only while `REPORTED`, needs `If-Match` |
+| GET | `/reports/{id}/actions` | signed in | what the caller can do now |
+| GET | `/reports/{id}/timeline` | public | history; staff also see internal notes |
+| POST | `/reports/{id}/{action}` | depends on action | lifecycle actions, need `If-Match`, see below |
+| GET | `/reports/{id}/comments` | public | staff also see internal comments |
+| POST | `/reports/{id}/comments` | signed in | `{"body": "...", "visibility": "PUBLIC"}`, `INTERNAL` for staff only |
+| PATCH | `/reports/{id}/comments/{commentId}` | MODERATOR | `{"hidden": true, "reason": "..."}` |
+| PUT | `/reports/{id}/confirmation` | CITIZEN | `{"kind": "STILL_PRESENT"}` or `FIXED`, not on your own report |
+| DELETE | `/reports/{id}/confirmation` | CITIZEN | withdraw your confirmation |
 
 ### Signing in
 
@@ -44,6 +59,71 @@ Cache-Control: no-store
 
 Send the token as `Authorization: Bearer <accessToken>`. On a 401 with
 `TOKEN_INVALID`, call `/auth/refresh` and retry with the new token.
+
+### Reports
+
+```http
+POST /api/v1/reports
+Authorization: Bearer ...
+Idempotency-Key: 6f0c1d5e-7d1e-4a0b-9d38-3f2a1c0b9e11
+Content-Type: application/json
+
+{"categoryCode": "POTHOLE", "title": "Deep pothole", "description": "Next to the tram stop",
+ "severity": "HIGH", "latitude": 46.948, "longitude": 7.4474, "address": "Bubenbergplatz"}
+```
+
+```http
+HTTP/1.1 201
+Location: /api/v1/reports/0199b1c4-...
+ETag: "0"
+
+{"id": "0199b1c4-...", "reference": "CP-10000", "status": "REPORTED", "version": 0, "mine": true, "staff": null, ...}
+```
+
+Sending the same `Idempotency-Key` again returns the report created the first
+time instead of a second one.
+
+The public view never contains the reporter, the team, the assignee or internal
+notes. Those are in `staff`, which is only filled in for moderators, operators
+and admins.
+
+### Lifecycle actions
+
+Each action is `POST /api/v1/reports/{id}/{action}`. The rules are in
+[ADR 004](../adr/004-report-lifecycle.md).
+
+| Action | Body |
+| --- | --- |
+| `triage` | `{"categoryCode": "POTHOLE", "severity": "HIGH"}` |
+| `reject` | `{"reason": "NOT_A_CITY_MATTER", "note": "..."}` (`NOT_ENOUGH_INFORMATION`, `ALREADY_FIXED`, `INAPPROPRIATE`, `OTHER`) |
+| `mark-duplicate` | `{"duplicateOf": "<report id>"}` |
+| `request-information` | `{"question": "..."}` |
+| `provide-information` | `{"answer": "..."}` |
+| `resume` | `{"note": "..."}` (optional, staff only) |
+| `assign` | `{"teamId": "...", "assigneeId": "..."}` (assignee optional) |
+| `unassign` | `{"reason": "..."}` (staff only) |
+| `start` | none |
+| `hand-back` | `{"note": "..."}` (staff only) |
+| `resolve` | `{"resolution": "..."}` |
+| `reopen` | `{"comment": "..."}` |
+| `close` | none |
+| `restore` | `{"reason": "...", "severity": "HIGH"}` (severity optional, reason staff only) |
+
+"Staff only" means the text is stored as an internal timeline note.
+
+### Concurrent changes
+
+`GET /reports/{id}` returns the report version as `ETag`. `PATCH` and all
+actions need it back in `If-Match`:
+
+```http
+POST /api/v1/reports/0199b1c4-.../assign
+If-Match: "3"
+```
+
+Without `If-Match` the answer is 428, with an old version 412. Reload the
+report and try again. The version only changes when the report itself changes,
+not on new comments or confirmations.
 
 ### Paged responses
 
@@ -94,11 +174,22 @@ fields without duplicates like `detail`/`message`.
 | 403 | `ACCESS_DENIED` | signed in, but the role does not allow it |
 | 404 | `RESOURCE_NOT_FOUND` | unknown path or resource |
 | 404 | `USER_NOT_FOUND` | no user with this id |
+| 404 | `REPORT_NOT_FOUND`, `COMMENT_NOT_FOUND` | no report or comment with this id |
 | 405 | `METHOD_NOT_ALLOWED` | method not supported on this path |
 | 409 | `EMAIL_ALREADY_REGISTERED` | registration with an existing email |
 | 409 | `CANNOT_REMOVE_OWN_ADMIN_ROLE`, `CANNOT_DISABLE_OWN_ACCOUNT` | an admin would lock themselves out |
+| 409 | `INVALID_STATUS_TRANSITION` | the action is not possible in the report's status |
+| 409 | `REPORT_NOT_EDITABLE` | the report was already triaged |
+| 409 | `REOPEN_WINDOW_CLOSED` | resolved more than 14 days ago |
+| 409 | `DUPLICATE_TARGET_INVALID` | the other report is the same report or closed |
+| 409 | `REPORT_CLOSED` | no comments or confirmations on a closed report |
+| 409 | `OWN_REPORT` | confirming your own report |
+| 412 | `VERSION_CONFLICT` | `If-Match` does not match the current version |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | wrong `Content-Type` |
 | 422 | `UNKNOWN_TEAM` | team id does not exist |
+| 422 | `UNKNOWN_CATEGORY` | category code does not exist |
+| 422 | `ASSIGNEE_NOT_IN_TEAM` | the assignee is not an operator in that team |
+| 428 | `PRECONDITION_REQUIRED` | `If-Match` is missing |
 | 429 | `RATE_LIMITED` | too many attempts; see `Retry-After` |
 | 500 | `INTERNAL_ERROR` | unexpected error; details only in the logs |
 

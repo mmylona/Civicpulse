@@ -46,6 +46,7 @@ flowchart LR
 - [ADR 001: Modular monolith](docs/adr/001-modular-monolith.md)
 - [ADR 002: PostgreSQL and PostGIS](docs/adr/002-postgresql-postgis.md)
 - [ADR 003: Authentication](docs/adr/003-authentication.md)
+- [ADR 004: Report lifecycle](docs/adr/004-report-lifecycle.md)
 - [API conventions and error format](docs/api/README.md)
 - [Database conventions](docs/database/README.md)
 
@@ -67,6 +68,13 @@ flowchart LR
 - Roles checked on the backend by URL rules and `@PreAuthorize`; integration
   tests cover each role on the admin endpoints.
 - Lockout after 5 failed logins, rate limiting per IP.
+- Report lifecycle as a table of 14 actions with role, team and time rules. A
+  test checks all 81 status pairs against the table
+  ([ADR 004](docs/adr/004-report-lifecycle.md)).
+- Optimistic locking with `ETag`/`If-Match`, so two operators can't overwrite
+  each other's changes. `Idempotency-Key` on report creation.
+- Staff-only notes are filtered in the SQL query, not after loading. A test
+  checks that an internal note never shows up in anything a citizen can load.
 - Append-only audit log (a trigger blocks UPDATE/DELETE), written in the same
   transaction as the change.
 - `ModularityTests` fails the build if a module uses another module's internals.
@@ -80,7 +88,7 @@ flowchart LR
 
 - [x] Project setup, CI, Docker
 - [x] Authentication, users, roles and audit log
-- [ ] Reports and their lifecycle
+- [x] Reports and their lifecycle (API)
 - [ ] Geospatial search
 - [ ] Map and report form for citizens
 - [ ] Operator and moderator dashboards

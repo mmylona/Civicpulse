@@ -37,8 +37,10 @@ taking the app down.
 | `analytics` | dashboard figures, hotspots |
 | `audit` | audit log |
 
-`shared`, `identity` and `audit` exist so far; the others are added as they are built.
-`audit` listens to events published by `identity` and never calls it directly.
+`shared`, `identity`, `reports` and `audit` exist so far; the others are added as
+they are built. `reports` reads users and teams through `UserDirectory`, the
+only part of `identity` other modules use. `audit` listens to events published
+by `identity` and `reports` and never calls them directly.
 `ModularityTests` checks the boundaries ([ADR 001](../adr/001-modular-monolith.md)).
 
 ## Inside a module
@@ -59,3 +61,5 @@ taking the app down.
   the format in [docs/api](../api/README.md).
 - Logs: JSON (ECS) in Docker, plain text when run locally.
 - Time: a `Clock` bean is injected wherever time matters, so tests can control it.
+- Scheduled jobs: `@Scheduled` with the cron in configuration; tests switch them
+  off with `-` and call the job directly.

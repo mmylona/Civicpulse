@@ -30,11 +30,26 @@ Checked on the backend in `SecurityConfig` (`/api/**` needs a token,
 frontend guards only hide pages. An admin can't remove their own admin role or
 disable their own account.
 
+## Reports
+
+- Anyone can read reports, their public timeline and public comments. The
+  reporter's identity, team, assignee and internal notes are only returned to
+  staff.
+- Internal timeline entries and comments are excluded in the SQL query for
+  non-staff users.
+- Report actions check role, team and reporter in the domain model
+  ([ADR 004](docs/adr/004-report-lifecycle.md)). Admins have no report actions.
+- Moderators can hide comments; the text is kept and the action is audited.
+- Creating reports is limited to 20 per hour and comments to 60 per hour per
+  user.
+
 ## Audit log
 
-Registrations, logins, failed logins, lockouts, role/team/status changes and
-refresh token reuse are saved to `audit_entries` in the same transaction as the
-change, together with the request id. A trigger rejects `UPDATE` and `DELETE`.
+Registrations, logins, failed logins, lockouts, role/team/status changes,
+refresh token reuse, restored reports and hidden comments are saved to
+`audit_entries` in the same transaction as the change, together with the
+request id. A trigger rejects `UPDATE` and `DELETE`. Normal report status
+changes are in the report timeline (`report_events`), which is append-only too.
 
 ## Other
 
