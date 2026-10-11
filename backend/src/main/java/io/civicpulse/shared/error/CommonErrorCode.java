@@ -11,6 +11,8 @@ public enum CommonErrorCode implements ErrorCode {
     NOT_ACCEPTABLE(HttpStatus.NOT_ACCEPTABLE, "The requested response format is not supported"),
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "This content type is not supported"),
     REQUEST_REJECTED(HttpStatus.BAD_REQUEST, "The request was rejected"),
+    VERSION_CONFLICT(HttpStatus.PRECONDITION_FAILED, "Someone else changed this in the meantime. Reload and try again"),
+    PRECONDITION_REQUIRED(HttpStatus.PRECONDITION_REQUIRED, "The If-Match header is required"),
     RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "Too many requests. Try again later"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
 
@@ -43,7 +45,9 @@ public enum CommonErrorCode implements ErrorCode {
             case 404 -> RESOURCE_NOT_FOUND;
             case 405 -> METHOD_NOT_ALLOWED;
             case 406 -> NOT_ACCEPTABLE;
+            case 412 -> VERSION_CONFLICT;
             case 415 -> UNSUPPORTED_MEDIA_TYPE;
+            case 428 -> PRECONDITION_REQUIRED;
             case 429 -> RATE_LIMITED;
             default -> status >= 400 && status < 500 ? REQUEST_REJECTED : INTERNAL_ERROR;
         };

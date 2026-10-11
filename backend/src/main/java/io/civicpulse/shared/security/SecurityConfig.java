@@ -58,6 +58,14 @@ public class SecurityConfig {
                                 "/api/v1/auth/refresh",
                                 "/api/v1/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/system/info").permitAll()
+                        // reports can be read without an account
+                        .requestMatchers(HttpMethod.GET, "/api/v1/reports/mine", "/api/v1/reports/*/actions").authenticated()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/categories",
+                                "/api/v1/reports",
+                                "/api/v1/reports/*",
+                                "/api/v1/reports/*/timeline",
+                                "/api/v1/reports/*/comments").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.name())
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())

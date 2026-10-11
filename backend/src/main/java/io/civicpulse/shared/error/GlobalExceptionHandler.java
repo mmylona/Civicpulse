@@ -8,6 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSourceResolvable;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -71,6 +72,12 @@ public class GlobalExceptionHandler {
                 .body(response.getBody());
     }
 
+    // another transaction changed the row between our read and write
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    ResponseEntity<ApiError> handleOptimisticLock(OptimisticLockingFailureException ex, HttpServletRequest request) {
+        return responses.of(CommonErrorCode.VERSION_CONFLICT, request);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ApiError> handleInvalidBody(MethodArgumentNotValidException ex, HttpServletRequest request) {
         List<ApiError.FieldViolation> violations = ex.getBindingResult().getAllErrors().stream()
@@ -88,9 +95,13 @@ public class GlobalExceptionHandler {
         List<ApiError.FieldViolation> violations = ex.getParameterValidationResults().stream()
                 .flatMap(result -> result.getResolvableErrors().stream()
                         .map(error -> new ApiError.FieldViolation(
-                                result.getMethodParameter().getParameterName(),
+                                // a @RequestBody validated together with other parameters gives field errors
+                                error instanceof FieldError fieldError
+                                        ? fieldError.getField()
+                                        : result.getMethodParameter().getParameterName(),
                                 constraintName(error),
                                 error.getDefaultMessage())))
+                .sorted(Comparator.comparing(ApiError.FieldViolation::field))
                 .toList();
         return validationFailed(violations, request);
     }
