@@ -3,11 +3,13 @@ package io.civicpulse.identity.application;
 import io.civicpulse.identity.TeamSummary;
 import io.civicpulse.identity.UserDirectory;
 import io.civicpulse.identity.UserSummary;
+import io.civicpulse.identity.domain.EmailAddresses;
 import io.civicpulse.identity.domain.User;
 import io.civicpulse.identity.infrastructure.TeamRepository;
 import io.civicpulse.identity.infrastructure.UserRepository;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +31,18 @@ class UserDirectoryService implements UserDirectory {
     @Override
     public Optional<UserSummary> findUser(UUID id) {
         return users.findById(id).map(UserDirectoryService::summary);
+    }
+
+    @Override
+    public Optional<UserSummary> findUserByEmail(String email) {
+        return users.findByEmail(EmailAddresses.normalize(email)).map(UserDirectoryService::summary);
+    }
+
+    @Override
+    public List<TeamSummary> teams() {
+        return teams.findAllByOrderByNameAsc().stream()
+                .map(team -> new TeamSummary(team.getId(), team.name()))
+                .toList();
     }
 
     @Override

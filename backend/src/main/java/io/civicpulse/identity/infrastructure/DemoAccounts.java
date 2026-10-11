@@ -13,12 +13,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Profile("demo")
+@Order(1)
 class DemoAccounts implements ApplicationRunner {
 
     static final String PASSWORD = "civicpulse-demo";
@@ -60,6 +62,8 @@ class DemoAccounts implements ApplicationRunner {
         createIfMissing("moderator@demo.local", "Demo Moderator", Set.of(Role.MODERATOR), null, now);
         createIfMissing("operator@demo.local", "Demo Operator", Set.of(Role.CITY_OPERATOR), roads, now);
         createIfMissing("admin@demo.local", "Demo Admin", Set.of(Role.ADMIN), null, now);
+        // reporter of the generated demo reports
+        createIfMissing("residents@demo.local", "Bern Residents", Set.of(Role.CITIZEN), null, now);
     }
 
     private void createIfMissing(String email, String name, Set<Role> roles, Team team, Instant now) {
