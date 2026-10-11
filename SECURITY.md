@@ -41,7 +41,7 @@ disable their own account.
   ([ADR 004](docs/adr/004-report-lifecycle.md)). Admins have no report actions.
 - Moderators can hide comments; the text is kept and the action is audited.
 - Creating reports is limited to 20 per hour and comments to 60 per hour per
-  user.
+  user. The public map and nearby search allow 120 requests per minute per IP.
 
 ## Audit log
 

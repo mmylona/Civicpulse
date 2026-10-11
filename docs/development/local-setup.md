@@ -40,7 +40,11 @@ mvn spring-boot:run
 ```
 
 The backend refuses to start without a JWT secret of at least 32 bytes. The
-`demo` profile creates the demo accounts listed in the README.
+`demo` profile creates the demo accounts listed in the README and 300 made-up
+reports around Bern (only if the demo residents account has none yet). Set
+`CIVICPULSE_DEMO_REPORTS` to change the number, for example `100000` to try
+the map with a lot of data; start from an empty database
+(`docker compose down -v`) for that.
 
 | URL | |
 | --- | --- |

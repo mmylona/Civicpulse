@@ -30,6 +30,9 @@ They are for local use only.
 | `operator@demo.local` | City operator (Roads and Infrastructure) | `civicpulse-demo` |
 | `admin@demo.local` | Admin | `civicpulse-demo` |
 
+The demo profile also adds 300 made-up reports around Bern, reported by
+`residents@demo.local`.
+
 ## Architecture
 
 A modular monolith: one Spring Boot backend, an Angular SPA served by nginx, and
@@ -47,6 +50,7 @@ flowchart LR
 - [ADR 002: PostgreSQL and PostGIS](docs/adr/002-postgresql-postgis.md)
 - [ADR 003: Authentication](docs/adr/003-authentication.md)
 - [ADR 004: Report lifecycle](docs/adr/004-report-lifecycle.md)
+- [ADR 005: Map and nearby queries](docs/adr/005-map-and-nearby.md)
 - [API conventions and error format](docs/api/README.md)
 - [Database conventions](docs/database/README.md)
 
@@ -73,6 +77,9 @@ flowchart LR
   ([ADR 004](docs/adr/004-report-lifecycle.md)).
 - Optimistic locking with `ETag`/`If-Match`, so two operators can't overwrite
   each other's changes. `Idempotency-Key` on report creation.
+- Map clusters and nearby search in PostGIS with a partial GIST index. A test
+  loads 100,000 reports and checks the query plans; the measurements are in
+  [ADR 005](docs/adr/005-map-and-nearby.md).
 - Staff-only notes are filtered in the SQL query, not after loading. A test
   checks that an internal note never shows up in anything a citizen can load.
 - Append-only audit log (a trigger blocks UPDATE/DELETE), written in the same
@@ -89,7 +96,7 @@ flowchart LR
 - [x] Project setup, CI, Docker
 - [x] Authentication, users, roles and audit log
 - [x] Reports and their lifecycle (API)
-- [ ] Geospatial search
+- [x] Geospatial search (API)
 - [ ] Map and report form for citizens
 - [ ] Operator and moderator dashboards
 - [ ] Photo uploads

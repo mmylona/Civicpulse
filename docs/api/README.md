@@ -22,7 +22,11 @@ marked public. Public endpoints also accept a token and then return more
 | GET | `/admin/audit?action=&actorId=&targetType=&targetId=&page=&size=` | ADMIN | audit log, newest first |
 | GET | `/categories` | public | active categories |
 | POST | `/reports` | CITIZEN | new report (201), optional `Idempotency-Key` header |
-| GET | `/reports?status=&category=&q=&page=&size=` | public | newest first; staff can also filter by `teamId` and `assignee=me` |
+| GET | `/reports?status=&category=&district=&q=&page=&size=` | public | newest first; staff can also filter by `teamId` and `assignee=me` |
+| GET | `/reports/map?bbox=&zoom=&category=&includeClosed=` | public | clusters below zoom 15, markers from 15, see below |
+| GET | `/reports/nearby?lat=&lng=&radius=&category=&limit=` | public | open reports within `radius` metres (max 2000), closest first |
+| GET | `/geo/districts` | public | districts with their outline as GeoJSON |
+| GET | `/geo/critical-sites` | public | hospitals, schools and stations |
 | GET | `/reports/mine` | signed in | the caller's own reports |
 | GET | `/reports/{id}` | public | details with `ETag`; staff get an extra `staff` object |
 | PATCH | `/reports/{id}` | reporter | only while `REPORTED`, needs `If-Match` |
@@ -86,6 +90,36 @@ time instead of a second one.
 The public view never contains the reporter, the team, the assignee or internal
 notes. Those are in `staff`, which is only filled in for moderators, operators
 and admins.
+
+### Map
+
+`bbox` is `west,south,east,north` in degrees (what Leaflet's
+`getBounds().toBBoxString()` returns). It may not be much larger than a
+screen at the given zoom.
+
+```http
+GET /api/v1/reports/map?bbox=7.38,46.93,7.50,46.97&zoom=13
+```
+
+```json
+{
+  "mode": "CLUSTERS",
+  "clusters": [
+    {"latitude": 46.9481, "longitude": 7.4479, "count": 17, "categoryCode": "POTHOLE", "severity": "HIGH", "reportId": null}
+  ],
+  "markers": [],
+  "truncated": false
+}
+```
+
+From zoom 15 `mode` is `MARKERS` and `markers` holds single reports (id,
+reference, title, category, status, severity, position). A cluster with one
+report has its `reportId`. At most 500 items are returned; `truncated` says if
+there were more. Closed reports are left out unless `includeClosed=true`.
+The map and nearby endpoints allow 120 requests per minute per IP.
+
+The ADR with the query details and measurements is
+[ADR 005](../adr/005-map-and-nearby.md).
 
 ### Lifecycle actions
 
@@ -178,6 +212,7 @@ fields without duplicates like `detail`/`message`.
 | 405 | `METHOD_NOT_ALLOWED` | method not supported on this path |
 | 409 | `EMAIL_ALREADY_REGISTERED` | registration with an existing email |
 | 409 | `CANNOT_REMOVE_OWN_ADMIN_ROLE`, `CANNOT_DISABLE_OWN_ACCOUNT` | an admin would lock themselves out |
+| 400 | `INVALID_BOUNDING_BOX` | `bbox` is not `west,south,east,north` or too large for the zoom |
 | 409 | `INVALID_STATUS_TRANSITION` | the action is not possible in the report's status |
 | 409 | `REPORT_NOT_EDITABLE` | the report was already triaged |
 | 409 | `REOPEN_WINDOW_CLOSED` | resolved more than 14 days ago |
@@ -188,6 +223,7 @@ fields without duplicates like `detail`/`message`.
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | wrong `Content-Type` |
 | 422 | `UNKNOWN_TEAM` | team id does not exist |
 | 422 | `UNKNOWN_CATEGORY` | category code does not exist |
+| 422 | `LOCATION_OUTSIDE_CITY` | the location is not in any district |
 | 422 | `ASSIGNEE_NOT_IN_TEAM` | the assignee is not an operator in that team |
 | 428 | `PRECONDITION_REQUIRED` | `If-Match` is missing |
 | 429 | `RATE_LIMITED` | too many attempts; see `Retry-After` |

@@ -16,6 +16,7 @@ PostgreSQL 17 with PostGIS, pg_trgm and citext ([ADR 002](../adr/002-postgresql-
 | V2 | `teams`, `users`, `user_roles`, `refresh_tokens` |
 | V3 | `audit_entries` and the `reject_row_change()` trigger function |
 | V4 | `categories`, `reports`, `report_events`, `report_comments`, `confirmations` |
+| V5 | `districts`, `critical_sites`, `reports.district_code`, spatial indexes on reports |
 
 ## Tables
 
@@ -127,7 +128,12 @@ erDiagram
   only while waiting, `DUPLICATE` always has `duplicate_of_id`, `ASSIGNED` and
   `IN_PROGRESS` always have a team.
 - `location` is generated from `latitude` and `longitude`, so JPA only maps
-  plain numbers. The spatial index comes with the geo queries.
+  plain numbers.
+- `reports_open_location_idx` is a partial GIST index on reports that are not
+  closed, rejected or duplicates; `reports_location_idx` covers all of them.
+  See [ADR 005](../adr/005-map-and-nearby.md).
+- `district_code` is set by the application when a report is created or
+  moved through the API. It can be null for generated demo data.
 - `report_events` is append-only like `audit_entries`. `seq` keeps the order of
   entries written in the same millisecond.
 - `still_present_count` and `fixed_count` are only written by an SQL recount
@@ -136,6 +142,17 @@ erDiagram
 - References come from the sequence `report_number_seq`, starting at 10000.
 - Categories are seeded by the migration. Their labels are translated in the
   frontend.
+
+### Geo reference data
+
+| Table | Contents |
+| --- | --- |
+| `districts` | `code`, `name`, `boundary geometry(MultiPolygon, 4326)` with a GIST index |
+| `critical_sites` | `kind` (HOSPITAL, SCHOOL, CARE_HOME, TRANSIT_HUB), `name`, `location geography(Point)`, `weight` |
+
+Both are filled by V5 with data for Bern. The six district outlines are
+simplified rectangles, not the official boundaries, and the site positions are
+approximate.
 
 ## Conventions
 
