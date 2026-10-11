@@ -79,13 +79,14 @@ class ReportController {
     PageResponse<ReportSummary> search(
             @RequestParam(required = false) Set<ReportStatus> status,
             @RequestParam(required = false) @Size(max = 50) String category,
+            @RequestParam(required = false) @Size(max = 50) String district,
             @RequestParam(required = false) @Size(max = 100) String q,
             @RequestParam(required = false) UUID teamId,
             @RequestParam(required = false) @Pattern(regexp = "me") String assignee,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             @AuthenticationPrincipal Jwt jwt) {
-        ReportFilter filter = new ReportFilter(status, category, q, teamId, assignee != null);
+        ReportFilter filter = new ReportFilter(status, category, district, q, teamId, assignee != null);
         return reports.search(filter, userOrNull(jwt), page, size);
     }
 

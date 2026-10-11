@@ -1,5 +1,7 @@
 package io.civicpulse.reports.application;
 
+import io.civicpulse.geo.District;
+import io.civicpulse.geo.GeoDirectory;
 import io.civicpulse.identity.UserDirectory;
 import io.civicpulse.reports.domain.Actor;
 import io.civicpulse.reports.domain.Report;
@@ -44,17 +46,20 @@ public class ReportService {
     private final CategoryRepository categories;
     private final ReportTimeline timeline;
     private final UserDirectory directory;
+    private final GeoDirectory geo;
     private final Actors actors;
     private final ReportViews views;
     private final ReportHistory history;
     private final Clock clock;
 
     ReportService(ReportRepository reports, CategoryRepository categories, ReportTimeline timeline,
-            UserDirectory directory, Actors actors, ReportViews views, ReportHistory history, Clock clock) {
+            UserDirectory directory, GeoDirectory geo, Actors actors, ReportViews views, ReportHistory history,
+            Clock clock) {
         this.reports = reports;
         this.categories = categories;
         this.timeline = timeline;
         this.directory = directory;
+        this.geo = geo;
         this.actors = actors;
         this.views = views;
         this.history = history;
@@ -73,6 +78,7 @@ public class ReportService {
             }
         }
         requireCategory(request.categoryCode());
+        District district = districtAt(request.latitude(), request.longitude());
         Instant now = clock.instant();
         ReportContent content = new ReportContent(
                 request.categoryCode(),
@@ -83,6 +89,7 @@ public class ReportService {
                 request.longitude(),
                 blankToNull(request.address()));
         Report report = Report.submit(Ids.newId(), "CP-" + reports.nextNumber(), user.id(), content, submissionKey, now);
+        report.placeIn(district.code());
         reports.saveAndFlush(report);
         history.submitted(report, now);
         return views.details(report, viewer);
@@ -118,6 +125,9 @@ public class ReportService {
             if (!updated.categoryCode().equals(current.categoryCode())) {
                 requireCategory(updated.categoryCode());
             }
+            if (updated.latitude() != current.latitude() || updated.longitude() != current.longitude()) {
+                report.placeIn(districtAt(updated.latitude(), updated.longitude()).code());
+            }
             reports.saveAndFlush(report);
             history.edited(report, actor, changedFields(current, updated), now);
         }
@@ -134,7 +144,7 @@ public class ReportService {
 
     @Transactional(readOnly = true)
     public PageResponse<ReportSummary> mine(CurrentUser user, int page, int size) {
-        ReportFilter all = new ReportFilter(Set.of(), null, null, null, false);
+        ReportFilter all = new ReportFilter(Set.of(), null, null, null, null, false);
         return PageResponse.of(
                 reports.findAll(matching(all, Viewer.anonymous(), user.id()), PageRequest.of(page, size, NEWEST_FIRST)),
                 ReportSummary::of);
@@ -186,6 +196,12 @@ public class ReportService {
 
     private Report load(UUID id) {
         return reports.findById(id).orElseThrow(() -> new ApiException(ReportErrorCode.REPORT_NOT_FOUND));
+    }
+
+    // reports are only accepted inside the city
+    private District districtAt(double latitude, double longitude) {
+        return geo.districtAt(latitude, longitude)
+                .orElseThrow(() -> new ApiException(ReportErrorCode.LOCATION_OUTSIDE_CITY));
     }
 
     private void requireCategory(String code) {
@@ -244,6 +260,9 @@ public class ReportService {
             }
             if (filter.categoryCode() != null) {
                 predicates.add(cb.equal(root.get("categoryCode"), filter.categoryCode()));
+            }
+            if (filter.districtCode() != null) {
+                predicates.add(cb.equal(root.get("districtCode"), filter.districtCode()));
             }
             if (filter.query() != null && !filter.query().isBlank()) {
                 String pattern = "%" + escapeLike(filter.query().strip().toLowerCase(Locale.ROOT)) + "%";

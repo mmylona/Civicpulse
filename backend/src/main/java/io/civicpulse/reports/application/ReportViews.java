@@ -1,5 +1,6 @@
 package io.civicpulse.reports.application;
 
+import io.civicpulse.geo.GeoDirectory;
 import io.civicpulse.identity.UserDirectory;
 import io.civicpulse.reports.domain.ConfirmationKind;
 import io.civicpulse.reports.domain.Report;
@@ -18,12 +19,17 @@ class ReportViews {
     // "still there" confirmations after a report was resolved before staff are told about it
     static final int REOPEN_REQUEST_THRESHOLD = 2;
 
+    // a problem this close to a hospital, school or station matters more
+    static final double CRITICAL_SITE_RADIUS_METERS = 150;
+
     private final UserDirectory directory;
+    private final GeoDirectory geo;
     private final ReportRepository reports;
     private final Confirmations confirmations;
 
-    ReportViews(UserDirectory directory, ReportRepository reports, Confirmations confirmations) {
+    ReportViews(UserDirectory directory, GeoDirectory geo, ReportRepository reports, Confirmations confirmations) {
         this.directory = directory;
+        this.geo = geo;
         this.reports = reports;
         this.confirmations = confirmations;
     }
@@ -33,6 +39,11 @@ class ReportViews {
                 ? null
                 : reports.findById(report.duplicateOfId())
                         .map(original -> new ReportDetails.Link(original.id(), original.reference()))
+                        .orElse(null);
+        ReportDetails.District district = report.districtCode() == null
+                ? null
+                : geo.findDistrict(report.districtCode())
+                        .map(found -> new ReportDetails.District(found.code(), found.name()))
                         .orElse(null);
         ConfirmationKind myConfirmation = viewer.isSignedIn()
                 ? confirmations.find(report.id(), viewer.userId()).orElse(null)
@@ -48,6 +59,7 @@ class ReportViews {
                 report.latitude(),
                 report.longitude(),
                 report.address(),
+                district,
                 duplicateOf,
                 report.stillPresentCount(),
                 report.fixedCount(),
@@ -83,7 +95,8 @@ class ReportViews {
                 team,
                 person(report.assigneeId(), names),
                 report.resumeStatus(),
-                reopenRequested);
+                reopenRequested,
+                geo.criticalSitesNear(report.latitude(), report.longitude(), CRITICAL_SITE_RADIUS_METERS));
     }
 
     private static ReportDetails.Person person(UUID id, Map<UUID, String> names) {

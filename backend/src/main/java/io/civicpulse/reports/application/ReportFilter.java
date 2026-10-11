@@ -7,8 +7,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 // teamId and assignedToMe are only applied for staff
-public record ReportFilter(Set<ReportStatus> statuses, String categoryCode, String query, UUID teamId,
-        boolean assignedToMe) {
+public record ReportFilter(Set<ReportStatus> statuses, String categoryCode, String districtCode, String query,
+        UUID teamId, boolean assignedToMe) {
 
     public ReportFilter {
         // "?status=A," gives a null element

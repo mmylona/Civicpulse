@@ -67,6 +67,9 @@ public class Report extends AssignedIdEntity {
 
     private String address;
 
+    @Column(name = "district_code")
+    private String districtCode;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReportStatus status;
@@ -141,6 +144,11 @@ public class Report extends AssignedIdEntity {
         }
         apply(content, now);
         return true;
+    }
+
+    // set by the application from the location; null if unknown
+    public void placeIn(String districtCode) {
+        this.districtCode = districtCode;
     }
 
     public boolean canEdit(Actor actor) {
@@ -393,6 +401,10 @@ public class Report extends AssignedIdEntity {
 
     public String address() {
         return address;
+    }
+
+    public String districtCode() {
+        return districtCode;
     }
 
     public ReportStatus status() {

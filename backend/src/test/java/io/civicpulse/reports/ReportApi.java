@@ -33,6 +33,17 @@ final class ReportApi {
         return JsonPath.read(body, "$.id");
     }
 
+    String createAt(Session reporter, double latitude, double longitude, String categoryCode) throws Exception {
+        String body = mvc.perform(json(post("/api/v1/reports"), """
+                        {"categoryCode": "%s", "title": "Test report", "description": "Placed by a test",
+                         "severity": "MEDIUM", "latitude": %s, "longitude": %s}
+                        """.formatted(categoryCode, latitude, longitude))
+                        .header(HttpHeaders.AUTHORIZATION, reporter.bearer()))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        return JsonPath.read(body, "$.id");
+    }
+
     String etag(String id) throws Exception {
         return mvc.perform(get("/api/v1/reports/{id}", id))
                 .andExpect(status().isOk())
