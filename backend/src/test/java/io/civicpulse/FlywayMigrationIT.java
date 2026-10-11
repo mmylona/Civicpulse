@@ -47,6 +47,14 @@ class FlywayMigrationIT {
     }
 
     @Test
+    void reportTablesExist() {
+        List<String> tables = jdbc.queryForList(
+                "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'", String.class);
+
+        assertThat(tables).contains("categories", "reports", "report_events", "report_comments", "confirmations");
+    }
+
+    @Test
     void geographyDistanceIsMeasuredInMetres() {
         Double metres = jdbc.queryForObject("""
                 SELECT ST_Distance(
